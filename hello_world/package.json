@@ -1,0 +1,8 @@
+{
+  "name": "hello_world",
+  "version": "1.0.0",
+  "description": "hello ai coding - 原生 Node.js 前端页面",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
