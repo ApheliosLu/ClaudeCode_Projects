@@ -1,0 +1,7 @@
+# Claude Code 无需读取的文件：自动生成的临时产物和敏感文件
+
+expenses.db            # SQLite 数据库（二进制，运行时自动生成）
+finance_cli.egg-info/  # pip install -e . 构建元数据（自动生成）
+__pycache__/           # Python 字节码缓存
+*.pyc
+.env                   # 环境变量（敏感信息）

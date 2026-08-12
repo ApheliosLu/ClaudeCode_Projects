@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "finance-cli"
+version = "0.1.0"
+description = "Streamlit + SQLite 记账工具"
+requires-python = ">=3.10"
+dependencies = [
+    "streamlit",
+    "pandas",
+]
+
+[tool.setuptools.packages.find]
+include = ["finance*"]
