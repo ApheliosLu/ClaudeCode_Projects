@@ -5,7 +5,8 @@
             "Write",
             "Bash(npm *)",
             "Bash(git *)",
-            "Bash(node *)"
+            "Bash(node *)",
+            "Bash(python *)"
         ],
         "deny": [
             "Bash(rm -rf *)"
