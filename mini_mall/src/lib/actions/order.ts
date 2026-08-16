@@ -162,8 +162,9 @@ export async function cancelOrder(orderNo: string): Promise<ActionResult> {
     await prisma.$transaction(async (tx) => {
       const fresh = await tx.order.findUnique({ where: { orderNo } });
       if (!fresh) throw new Error("订单不存在");
-      if (!canTransition(fresh.status as OrderStatus, "CANCELLED")) {
-        throw new Error("当前订单状态不允许取消");
+      // 买家只能取消待支付订单（已支付/已发货的取消仅限管理员，白名单见 order-machine）
+      if (fresh.status !== "PENDING") {
+        throw new Error("仅待支付订单可取消");
       }
 
       await tx.order.update({

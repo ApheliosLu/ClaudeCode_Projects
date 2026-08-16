@@ -1,16 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { ShoppingCart } from "lucide-react";
 import { useCartStore } from "@/stores/cart";
+import { useMounted } from "@/hooks/use-mounted";
 
 // 购物车图标 + 数量徽标（mounted 标志防水合闪烁：persist 数据仅在客户端存在）
 export function CartBadge() {
   const count = useCartStore((s) => s.count());
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
+  const mounted = useMounted();
 
   return (
     <Link

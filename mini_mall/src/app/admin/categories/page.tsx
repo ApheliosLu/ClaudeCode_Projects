@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Trash2 } from "lucide-react";
+import { useMounted } from "@/hooks/use-mounted";
 
 type CategoryRow = {
   id: string;
@@ -23,6 +24,7 @@ export default function AdminCategoriesPage() {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -34,29 +36,43 @@ export default function AdminCategoriesPage() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 数据获取模式：fetch 后 setState 是标准用法
     load();
   }, [load]);
 
-  async function handleCreate(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
-    const res = await fetch("/api/admin/categories", {
-      method: "POST",
+    const url = editingId
+      ? `/api/admin/categories/${editingId}`
+      : "/api/admin/categories";
+    const res = await fetch(url, {
+      method: editingId ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, slug, description }),
     });
     const json = await res.json();
     setSubmitting(false);
     if (!res.ok || !json.success) {
-      setError(json.error ?? "创建失败");
+      setError(json.error ?? (editingId ? "保存失败" : "创建失败"));
       return;
     }
     setName("");
     setSlug("");
     setDescription("");
+    setEditingId(null);
     load();
     router.refresh();
+  }
+
+  /** 点击编辑：把分类数据填入表单（表单进入编辑模式） */
+  function startEdit(c: CategoryRow) {
+    setEditingId(c.id);
+    setName(c.name);
+    setSlug(c.slug);
+    setDescription(c.description ?? "");
+    setError(null);
   }
 
   async function handleDelete(id: string, productCount: number) {
@@ -81,12 +97,28 @@ export default function AdminCategoriesPage() {
     <div>
       <h1 className="mb-4 text-lg font-semibold">分类管理</h1>
 
-      {/* 新增表单 */}
+      {/* 新增/编辑表单 */}
       <form
-        onSubmit={handleCreate}
+        onSubmit={handleSubmit}
         className="mb-6 rounded-lg border p-4"
       >
-        <p className="mb-3 text-sm font-medium">新增分类</p>
+        <p className="mb-3 text-sm font-medium">
+          {editingId ? "编辑分类" : "新增分类"}
+          {editingId && (
+            <button
+              type="button"
+              onClick={() => {
+                setEditingId(null);
+                setName("");
+                setSlug("");
+                setDescription("");
+              }}
+              className="ml-2 text-xs text-muted-foreground hover:underline"
+            >
+              取消编辑
+            </button>
+          )}
+        </p>
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="space-y-1.5">
             <Label htmlFor="cat-name">分类名 *</Label>
@@ -130,7 +162,11 @@ export default function AdminCategoriesPage() {
         )}
         <Button type="submit" className="mt-3" disabled={submitting}>
           <Plus className="mr-1 h-4 w-4" />
-          {submitting ? "创建中..." : "创建分类"}
+          {submitting
+            ? "保存中..."
+            : editingId
+              ? "保存修改"
+              : "创建分类"}
         </Button>
       </form>
 
@@ -171,16 +207,25 @@ export default function AdminCategoriesPage() {
                   </td>
                   <td className="px-3 py-2 tabular-nums">{c._count.products}</td>
                   <td className="px-3 py-2 text-right">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="text-destructive"
-                      onClick={() => handleDelete(c.id, c._count.products)}
-                      disabled={deletingId === c.id}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      删除
-                    </Button>
+                    <div className="flex justify-end gap-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => startEdit(c)}
+                      >
+                        编辑
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="text-destructive"
+                        onClick={() => handleDelete(c.id, c._count.products)}
+                        disabled={deletingId === c.id}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        删除
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))

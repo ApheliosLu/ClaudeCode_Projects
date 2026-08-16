@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Search } from "lucide-react";
+import { useMounted } from "@/hooks/use-mounted";
 
 type ProductRow = {
   id: string;
@@ -47,13 +48,14 @@ export default function AdminProductsPage() {
   }, [q, all]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 数据获取模式：fetch 后 setState 是标准用法
     load();
   }, [load]);
 
-  async function handleDelete(id: string) {
+  async function handleDelete(slug: string) {
     if (!confirm("确定下架该商品？买家将无法购买（可在编辑中恢复上架）")) return;
-    setDeleting(id);
-    const res = await fetch(`/api/admin/products/${id}`, { method: "DELETE" });
+    setDeleting(slug);
+    const res = await fetch(`/api/admin/products/${slug}`, { method: "DELETE" });
     const json = await res.json();
     if (!res.ok || !json.success) {
       alert(json.error ?? "操作失败");
@@ -183,8 +185,8 @@ export default function AdminProductsPage() {
                           size="sm"
                           variant="outline"
                           className="text-destructive"
-                          onClick={() => handleDelete(p.id)}
-                          disabled={deleting === p.id}
+                          onClick={() => handleDelete(p.slug)}
+                          disabled={deleting === p.slug}
                         >
                           下架
                         </Button>

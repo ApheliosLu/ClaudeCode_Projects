@@ -22,7 +22,7 @@ export function ProductCard({ product }: { product: CardProduct }) {
         <div className="relative aspect-square overflow-hidden bg-muted">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={cover ?? "/placeholder.svg"}
+            src={cover ?? "https://picsum.photos/seed/minimall-placeholder/600/600"}
             alt={product.name}
             className="h-full w-full object-cover transition-transform group-hover:scale-105"
           />

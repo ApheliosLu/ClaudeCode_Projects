@@ -188,6 +188,47 @@
 
 ---
 
+## 阶段 7：收尾与 E2E 全流程测试（Phase G，2026-08-16）
+
+**计划**：README + not-found/error/loading + 构建验证 + 整体 E2E → /review。
+
+**实际过程**：
+
+1. **收尾文件** ✅：README（技术栈/功能/快速开始/账号/部署/文档）、not-found.tsx、error.tsx、loading.tsx；构建通过（24 路由 + Proxy）
+2. **E2E 测试** ✅（webapp-testing skill + Playwright 驱动系统 Edge，`channel="msedge"` 免下载 Chromium）
+   - **21/21 全部通过**：买家全流程 11 项（浏览/搜索/详情/注册/加购/下单/收银台/支付/订单/会员中心）+ **vip 9.5 折金额验证（¥89 → ¥84.55）** + **demo 累计跨 8000 元升级心悦1** + 管理端 6 项（仪表盘/商品列表/新建/编辑/订单发货流转/新建分类）
+   - 数据安全：测试前备份 dev.db，测试后恢复——库完整回到测试前状态
+3. **已安装**（Miniforge py314，工具层）：`playwright 1.62.0`（+ pyee/greenlet 依赖）——未下载浏览器（用系统 Edge）
+
+**遇到的问题与解决**：
+- **注册成功误判**：`content()` 抓取时表单 input value 混入判定 → 改等 header 显示用户名（wait_for_selector）。
+- **管理端页面客户端崩溃**："Failed to load chunk"——收尾文件新增后未 rebuild，next start 跑旧产物 → 重新 build 解决。
+- **新建商品保存无反应**：`select_option(index=0)` 选中占位项"请选择分类"（value=""），HTML5 required 校验拦截提交 → 改用 `label="数码电子"`。
+- **中文打印崩溃**：控制台 GBK 编码无法输出 ¥ → `sys.stdout.reconfigure(encoding="utf-8")`。
+- **测试数据管理**：先备份 dev.db → 测试后恢复（一劳永逸，优于逐条清理）。
+
+**下一步（计划）**：整体代码审查 /review → 收尾提交。
+
+---
+
+## 阶段 8：整体代码审查与修复（2026-08-16）
+
+**过程**：requesting-code-review skill 派遣审查子代理（general-purpose），审查 master..HEAD 全部 8 个 commit。结论：核心架构/金额/并发安全符合计划，**1 Critical + 3 Important + 11 Minor**，评估"修完再合"。
+
+**已修复（Critical + Important 全部）**：
+1. **[Critical] 管理端下架按钮恒 404**：DELETE 传 `p.id`（cuid）但 API 按 `[slug]` 查询 → 改传 `p.slug`。回归验证：DELETE 200 + PUT 恢复 200（含图片重建）。
+2. **[Important] 买家可取消已支付订单（越权）**：cancelOrder 复用共享白名单（PAID/SHIPPED 也允许 CANCELLED）→ 显式校验 `status === "PENDING"`，买家取消仅限待支付，管理员取消仍走白名单。
+3. **[Important] 缺 postinstall: prisma generate**（CLAUDE.md 声称有但实际无，Vercel 构建必挂）→ 补上 package.json script，与文档一致。
+4. **[Important] lint 全红**（32 问题：Prisma 生成代码被扫 + React 19 set-state-in-effect 规则误报 mounted 惯例 + fetch 模式）→ eslint ignore `src/generated/**` 与 `.claude/skills/**`；抽 `useMounted()` hook（文件级 disable 注明 hydration 惯例）；数据获取处 disable 注释；清理未用 import。最终 **0 errors**。
+
+**Minor 已修复**：open redirect（callbackURL 仅接受站内相对路径）、createOrder 重复 productId 去重（superRefine）、priceYuan 上限 1 亿、admin orders 状态枚举校验 400、ProductCard 缺图回退改 picsum、已登录访问 login/register 自动跳首页、**分类编辑功能补齐**（PUT API + 行内编辑，计划"增删改"完整）、**E2E 固化进仓库**（e2e/full-flow-test.py + README）。
+
+**Minor 记录不修**：折扣取整方式（单品取整，与计划整单取整差 1 分，实际更自洽）、better-sqlite3 死依赖（卸载风险大于收益，保留）、admin/orders/[id] 详情页（表格内联流转功能等价，偏差表已记录）。
+
+**项目最终状态**：买家 + 管理端 + 会员全功能，E2E 21/21，lint 0 errors，tsc 通过，生产构建通过，开发实录完整。
+
+---
+
 ## 附录：与计划的偏差汇总
 
 | 计划项 | 实际 | 原因 |

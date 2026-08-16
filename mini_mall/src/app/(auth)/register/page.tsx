@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
@@ -18,6 +18,12 @@ import {
 
 function RegisterForm() {
   const router = useRouter();
+  const { data: session } = authClient.useSession();
+
+  // 已登录直接回首页
+  useEffect(() => {
+    if (session) router.replace("/");
+  }, [session, router]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -49,6 +55,7 @@ function RegisterForm() {
     router.refresh();
   }
 
+  if (session) return null;
   return (
     <Card className="w-full max-w-md">
       <CardHeader>

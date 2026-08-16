@@ -9,18 +9,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useMounted } from "@/hooks/use-mounted";
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, clear, totalCents } = useCartStore();
-  const [mounted, setMounted] = useState(false);
+  const mounted = useMounted();
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
   const [shippingAddress, setShippingAddress] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-
-  useEffect(() => setMounted(true), []);
 
   if (!mounted) {
     return <div className="mx-auto w-full max-w-3xl px-4 py-8">加载中...</div>;

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useMounted } from "@/hooks/use-mounted";
 
 const STATUS_FILTERS = ["", "PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"];
 
@@ -49,6 +50,7 @@ export default function AdminOrdersPage() {
   }, [statusFilter, q]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 数据获取模式：fetch 后 setState 是标准用法
     load();
   }, [load]);
 

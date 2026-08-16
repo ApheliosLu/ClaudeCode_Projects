@@ -13,6 +13,12 @@ export async function GET(request: NextRequest) {
   const status = request.nextUrl.searchParams.get("status") ?? "";
   const q = request.nextUrl.searchParams.get("q")?.trim() ?? "";
 
+  // 枚举校验：非法 status 直接 400（避免 Prisma 裸抛）
+  const VALID_STATUSES = ["PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"];
+  if (status && !VALID_STATUSES.includes(status)) {
+    return NextResponse.json({ success: false, error: "无效的状态筛选" }, { status: 400 });
+  }
+
   const orders = await prisma.order.findMany({
     where: {
       ...(status ? { status: status as never } : {}),

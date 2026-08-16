@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
@@ -18,8 +18,17 @@ import {
 
 function LoginForm() {
   const router = useRouter();
+  const { data: session } = authClient.useSession();
   const searchParams = useSearchParams();
-  const callbackURL = searchParams.get("callbackURL") ?? "/";
+
+  // 已登录直接回首页
+  useEffect(() => {
+    if (session) router.replace("/");
+  }, [session, router]);
+  // 防 open redirect：仅接受站内相对路径（拒绝 // 与 http(s) 前缀）
+  const raw = searchParams.get("callbackURL");
+  const callbackURL =
+    raw && raw.startsWith("/") && !raw.startsWith("//") ? raw : "/";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -41,6 +50,7 @@ function LoginForm() {
     router.refresh();
   }
 
+  if (session) return null;
   return (
     <Card className="w-full max-w-md">
       <CardHeader>

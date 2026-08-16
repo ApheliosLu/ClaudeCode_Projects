@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Prisma 生成客户端（机器生成，不参与 lint）
+    "src/generated/**",
+    // skill 辅助脚本（.cjs/.js，非项目代码）
+    ".claude/skills/**",
   ]),
 ]);
 

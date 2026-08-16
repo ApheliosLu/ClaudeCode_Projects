@@ -8,12 +8,12 @@ import { formatCents } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Trash2 } from "lucide-react";
+import { useMounted } from "@/hooks/use-mounted";
 
 export default function CartPage() {
   const router = useRouter();
   const { items, setQty, remove, clear, totalCents } = useCartStore();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const mounted = useMounted();
 
   // 未挂载时渲染空壳，避免 persist 水合闪烁
   if (!mounted) {
