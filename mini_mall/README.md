@@ -53,13 +53,30 @@ npm run dev        # http://localhost:3000
 ## 常用命令
 
 ```bash
-npm run dev            # 开发
+npm run dev            # 开发（热更新）
 npm run build          # 生产构建
 npm start              # 生产运行（构建后）
 npx prisma migrate dev --name <name>   # schema 变更后建迁移
 npx prisma db seed     # 种子数据
 npx prisma studio      # 可视化数据库
 ```
+
+## 启动与停止服务器（Windows）
+
+```bash
+# 启动（在项目根目录执行）
+npm start              # 生产模式（快、稳，日常用这个）
+npm run dev            # 开发模式（改代码自动热更新）
+# 然后浏览器访问 http://localhost:3000
+
+# 停止（先找到进程 PID）
+netstat -ano | grep ":3000" | grep LISTENING   # 输出最后一列是 PID
+taskkill //F //PID <PID>                        # Git Bash 里用双斜杠
+taskkill /F /PID <PID>                          # cmd / PowerShell 里用单斜杠
+# 或任务管理器：Ctrl+Shift+Esc → 详细信息 → 结束占用最大的 node.exe
+```
+
+> 注意：关机后服务器不会自动启动，需重新 `npm start`。数据（dev.db）和构建产物（.next）都在磁盘上，不会丢失。开机自启可把启动命令放进 Windows 启动文件夹（`shell:startup`）或使用 PM2。
 
 ## 部署（Vercel）
 
