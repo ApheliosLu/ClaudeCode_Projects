@@ -94,6 +94,38 @@
 
 ---
 
+## 阶段 3：前台功能（Phase D，2026-08-16）
+
+**计划**：工具函数 + 会员规则 → 商品浏览（首页/列表/详情）→ 购物车 → 下单 → 订单 → 会员中心。
+
+**实际过程**：
+
+1. **基础层** ✅
+   - `lib/utils.ts`：cn（shadcn 生成）+ formatCents/toCents/genOrderNo + 会员/订单状态中文名
+   - `lib/membership.ts`：会员等级/阈值/折扣常量表（单一事实源）+ applyDiscount/getUpgradedLevel/getNextTier
+   - `stores/cart.ts`：Zustand + persist（localStorage）；金额仅展示用，下单以服务端为准
+2. **商品浏览** ✅：首页（hero + 分类入口 + featured 8 个）、列表页（q/category/sort 全部 searchParams 驱动）、详情页（画廊 + 加购 + 会员权益提示）
+3. **购物车/下单** ✅：购物车页、结算页（收货表单 + createOrder）、订单列表/详情（归属校验 + 快照展示 + 折扣标注）
+4. **会员中心** ✅：等级徽章、当前折扣、累计金额、距下一级差额、升级规则表
+5. **中途插入：安全审查**（用户要求 /security-review）：技能因无 git remote 无法自动运行 → 手动审查，结论"无高危问题，5 项部署期配置项已记录"。
+6. **用户新安排（Phase F 生效）**：管理端改用 **api-crud-generator skill 生成 REST API 形态**模块（用户明确指定接口清单）：
+   - 商品：GET/POST `/api/admin/products` + PUT/DELETE `/api/admin/products/[id]`
+   - 订单：GET `/api/admin/orders` + PUT `/api/admin/orders/[id]`（状态流转）
+   - 分类：GET/POST `/api/admin/categories` + DELETE `/api/admin/categories/[id]`
+   - 所有后台页面/接口校验 ADMIN。
+   - 注：与项目买家端 Server Actions 架构并存，届时把 skill 生成物调整为 REST 形态（保留安全约定）。
+
+**遇到的问题与解决**：
+- **Base UI 组件 API 差异（3 处修复）**：shadcn Base UI 版 Button 不支持 Radix `asChild` → 改用 `render={<Link/>}`（TS 报错定位）。
+- **Prisma 7 生成类型**：模型类型名为 `ProductModel` 非 `Product`；基础类型不含 include relation → ProductCard 改自有 DTO 类型。
+- **createOrder 错误处理缺陷（自检发现）**：商品校验 throw 在 try 块外会变 500 → 重构为整体 try/catch 返回 `{ error }`；`orderNo` 作用域同步修复。
+- **ActionResult 类型收窄**：`"error" in res && res.error` 复合条件无法收窄 → 改判别式 `"error" in res`。
+- **用户安排**：整体开发完成后调用 /review 做整体代码审查（已加入任务清单）。
+
+**下一步（计划）**：Phase E 模拟支付 + 会员升级（mockPay 含会员累加升级、cancelOrder 归还库存、支付页）。
+
+---
+
 ## 附录：与计划的偏差汇总
 
 | 计划项 | 实际 | 原因 |
