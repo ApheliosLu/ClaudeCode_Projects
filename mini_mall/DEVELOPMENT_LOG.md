@@ -67,6 +67,33 @@
 
 ---
 
+## 阶段 2：认证（Phase C，2026-08-16）
+
+**计划**：lib/auth.ts + auth-client + api/auth/[...all] + proxy.ts + guards + 登录注册页 + 补 seed 账号。
+
+**实际过程**：
+
+1. **shadcn/ui 初始化**（计划 Phase A 遗漏项，此处补上）
+   - `npx shadcn@latest init -b base -p nova -y`：2026 版 CLI 新增组件库选择，官方默认 **Base UI**（替代 Radix）+ Nova 预设（Lucide/Geist）。
+   - add 14 个组件（button/card/input/label/badge/table/select/dialog/dropdown-menu/textarea/skeleton/separator/sheet/sonner）→ `src/components/ui/`。
+   - 生成了 `src/lib/utils.ts`（cn 工具）。
+2. **认证核心** ✅
+   - `src/lib/auth.ts`：betterAuth 实例——emailAndPassword（min 8 位）、session 7 天、additionalFields 注入 role/membershipLevel/accumulatedSpentCents（input:false 防客户端篡改）、顶层不碰 next/headers（seed 可复用）。
+   - `src/lib/auth-client.ts`、`src/app/api/auth/[...all]/route.ts`、`src/lib/guards.ts`（getSession/requireAuth/requireAdmin）、`src/proxy.ts`（Next16 认证 UX 层，Node runtime 可查库，仅跳转）。
+3. **登录/注册页** ✅（客户端组件 + shadcn Card 表单；login 支持 callbackURL 回跳；Suspense 包裹 useSearchParams）
+4. **(account)/(admin) layout** ✅（服务端鉴权兜底 + admin 侧边栏）
+5. **seed 补账号** ✅ 重跑成功：admin@minimall.dev(ADMIN)、demo@minimall.dev(USER)、vip@minimall.dev(心悦2 预置 8 万元累计)。经 better-auth signUpEmail 注册保证密码哈希正确。
+6. **运行验证** ✅（dev server + curl）：
+   - 首页/登录页 200；未登录 /orders、/admin → 307 /login?callbackURL=…；登录后 /orders 放行（404 因页面未建，属正常）；非 ADMIN 访问 /admin → 307 首页；错误密码 401。
+
+**遇到的问题与解决**：
+- **better-auth 1.6 API 变化**：`auth.handlers` 不存在（TS 报错）。第一次尝试 `auth.handler`（单数函数），Next 路由要求 {GET, POST} 导出又不匹配 → 用官方适配器 `toNextJsHandler(auth)` 解决。
+- **shadcn init 交互卡住**：`-y` 不能跳过组件库/预设选择 → 查 help 发现 `-b base -p nova` 参数，非交互完成。
+
+**下一步（计划）**：Phase D 前台（商品浏览/购物车/下单/会员中心）。
+
+---
+
 ## 附录：与计划的偏差汇总
 
 | 计划项 | 实际 | 原因 |

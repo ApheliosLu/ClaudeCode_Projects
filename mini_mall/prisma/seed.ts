@@ -1,11 +1,49 @@
-// 种子数据：4 分类 × 16 商品（幂等，可重复执行）
-// 用户账号（admin/demo/vip）在 Phase C 认证落地后补充
+// 种子数据：4 分类 × 16 商品 + 3 个演示账号（幂等，可重复执行）
 import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { auth } from "../src/lib/auth";
 
 const adapter = new PrismaBetterSqlite3({ url: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
+
+// 演示账号（经 better-auth 注册，确保密码哈希与认证逻辑一致）
+async function seedUsers() {
+  // 管理员
+  const adminExists = await prisma.user.findUnique({ where: { email: "admin@minimall.dev" } });
+  if (!adminExists) {
+    await auth.api.signUpEmail({
+      body: { email: "admin@minimall.dev", password: "Admin@123456", name: "管理员" },
+    });
+    await prisma.user.update({
+      where: { email: "admin@minimall.dev" },
+      data: { role: "ADMIN" },
+    });
+    console.log("  ✓ 管理员账号 admin@minimall.dev (ADMIN)");
+  }
+
+  // 普通买家（用于测试会员升级）
+  const demoExists = await prisma.user.findUnique({ where: { email: "demo@minimall.dev" } });
+  if (!demoExists) {
+    await auth.api.signUpEmail({
+      body: { email: "demo@minimall.dev", password: "Demo@123456", name: "演示买家" },
+    });
+    console.log("  ✓ 买家账号 demo@minimall.dev (USER)");
+  }
+
+  // 会员演示账号：预置心悦2（累计 8 万元 → 9.5 折）
+  const vipExists = await prisma.user.findUnique({ where: { email: "vip@minimall.dev" } });
+  if (!vipExists) {
+    await auth.api.signUpEmail({
+      body: { email: "vip@minimall.dev", password: "Demo@123456", name: "会员演示" },
+    });
+    await prisma.user.update({
+      where: { email: "vip@minimall.dev" },
+      data: { membershipLevel: 2, accumulatedSpentCents: 8_000_000 },
+    });
+    console.log("  ✓ 会员账号 vip@minimall.dev (心悦2, 9.5折)");
+  }
+}
 
 type SeedProduct = {
   name: string;
@@ -211,8 +249,8 @@ async function main() {
     console.log(`  ✓ 分类「${cat.name}」${cat.products.length} 个商品`);
   }
 
-  // TODO(Phase C)：用户账号 admin/demo/vip 在认证模块落地后补充（经 better-auth 注册以正确哈希密码）
-  console.log("种子数据完成（商品与分类）。用户账号待 Phase C 补充后重跑本脚本。");
+  await seedUsers();
+  console.log("种子数据全部完成（分类、商品、演示账号）。");
 }
 
 main()
