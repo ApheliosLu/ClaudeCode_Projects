@@ -2,7 +2,7 @@
 
 学习用 Claude Code 从零搭建完整前后端电商项目，目标可部署到互联网（Vercel）。完整规格见计划文件 `C:\Users\q1209\.claude\plans\mini-mall-github-misty-newell.md`；实际开发过程、问题与解决方案见 [DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md)（开发实录，与计划对比）。
 
-项目文档：README（快速开始/账号）· [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)（部署上线步骤）· [LEARNING_ROADMAP.md](LEARNING_ROADMAP.md)（学习复盘与全栈路线）
+项目文档：README（快速开始/账号）· [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)（部署上线步骤）· [LEARNING_ROADMAP.md](LEARNING_ROADMAP.md)（学习复盘与全栈路线）· [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)（逐文件目录结构）
 
 ## 技术栈（2026-08 确认）
 
