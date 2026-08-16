@@ -49,3 +49,6 @@ src/generated/
 
 # claude local settings
 .claude/settings.local.json
+
+# root sqlite db (created relative to cwd)
+/dev.db*
