@@ -119,10 +119,14 @@ export async function mockPay(input: unknown): Promise<ActionResult> {
         throw new Error("当前订单状态不允许支付");
       }
 
-      await tx.order.update({
-        where: { orderNo },
+      // CAS 条件更新：where 带原状态，并发变更时 count=0 整体回滚（防 TOCTOU）
+      const updated = await tx.order.updateMany({
+        where: { orderNo, status: fresh.status },
         data: { status: "PAID", paidAt: new Date(), paymentChannel: channel },
       });
+      if (updated.count !== 1) {
+        throw new Error("订单状态已变化，请刷新后重试");
+      }
 
       // 会员：累计实付累加 + 按阈值升级（只升不降）
       const user = await tx.user.findUnique({ where: { id: session.user.id } });
@@ -167,10 +171,14 @@ export async function cancelOrder(orderNo: string): Promise<ActionResult> {
         throw new Error("仅待支付订单可取消");
       }
 
-      await tx.order.update({
-        where: { orderNo },
+      // CAS 条件更新：并发支付/取消时 count=0 回滚（防已支付又被取消 + 库存双归还）
+      const updated = await tx.order.updateMany({
+        where: { orderNo, status: "PENDING" },
         data: { status: "CANCELLED", cancelledAt: new Date() },
       });
+      if (updated.count !== 1) {
+        throw new Error("订单状态已变化，请刷新后重试");
+      }
 
       // 归还库存（按快照数量）
       for (const item of order.items) {

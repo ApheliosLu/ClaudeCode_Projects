@@ -83,6 +83,13 @@ mini_mall/
 - **Prisma 7**：生成客户端输出到 `src/generated/prisma`（gitignore）；`prisma.config.ts` 必须显式 `import 'dotenv/config'`；package.json 已有 `postinstall: prisma generate`（Vercel 构建必需）
 - **Next.js 16**：`middleware.ts` 不存在，必须用 `proxy.ts`（Node runtime）；Turbopack 默认打包器
 - **部署 Vercel**：文件系统只读 → 必须先切 Postgres（改 schema provider + adapter 自动分流 + `migrate deploy`）；连接串用 `postgresql://` 不用 `prisma://`（规避 Vercel issue #79063）；环境变量 `DATABASE_URL` / `BETTER_AUTH_SECRET` / `BETTER_AUTH_URL`（生产配 trustedOrigins）
+- **上线前置条件（安全审查结论，2026-08-16）**：
+  1. 支付决策：mockPay 不得原样上公网（接真实支付回调，或关注册/白名单限制演示边界）
+  2. 补 `@prisma/adapter-pg` + `pg`（当前 `src/lib/prisma.ts` 仅支持 file: 前缀，非 file: 直接 throw——部署硬阻塞）
+  3. 生产禁止执行 `prisma db seed`；上线后立即更换 admin 密码/删除演示账号（seed 密码已在 git 公开）
+  4. 环境变量：`BETTER_AUTH_SECRET`（强随机）、`BETTER_AUTH_URL=https://域名`（否则 cookie 无 Secure 标志）、`BETTER_AUTH_TRUSTED_ORIGINS`（含 Preview 域名）
+  5. PENDING 订单 TTL（30 分钟未支付自动取消回库存）+ 单账号在途订单上限（防库存占用 DoS）
+  6. 加固项：安全响应头（CSP）、serverless 限流（better-auth secondaryStorage 或平台层）、cancelReason 长度限制、邮箱验证、管理端审计日志、orderNo 高熵化
 - **better-auth**：`src/lib/auth.ts` 模块顶层不得调用 `next/headers`（seed 脚本 tsx 环境可复用）；getSession 在辅助函数内才 `await headers()`
 - **购物车水合**：Zustand persist 的客户端组件用 mounted 标志防 hydration mismatch
 - `prisma/dev.db`、`src/generated/`、`.env` 不入库；新功能先建 Git 分支（上层仓库管理）

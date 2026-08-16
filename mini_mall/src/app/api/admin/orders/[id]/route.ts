@@ -64,7 +64,14 @@ export async function PUT(
         }
       }
 
-      await tx.order.update({ where: { id }, data });
+      // CAS 条件更新：where 带读到的原状态，并发流转时 count=0 回滚（防竞态）
+      const updated = await tx.order.updateMany({
+        where: { id, status: fresh.status },
+        data,
+      });
+      if (updated.count !== 1) {
+        throw new Error("订单状态已变化，请刷新后重试");
+      }
     });
   } catch (e) {
     return NextResponse.json(

@@ -40,7 +40,8 @@ with sync_playwright() as p:
     page.fill('input[name="q"]', "手机")
     page.click('button[type="submit"]')
     page.wait_for_load_state("networkidle")
-    check("搜索'手机'", page.locator("text=智能手机").count() > 0)
+    page.wait_for_selector("text=智能手机", timeout=8000)
+    check("搜索'手机'", True)
 
     page.goto(f"{BASE}/products/phone-pro-2026", wait_until="networkidle")
     check("商品详情", page.locator("text=加入购物车").count() > 0)
@@ -90,6 +91,7 @@ with sync_playwright() as p:
     check("会员中心(普通会员)", "普通会员" in page.content())
 
     # ---------- 5. vip 会员折扣验证（9.5 折：89 元 → 84.55） ----------
+    page.context.clear_cookies()
     page.goto(f"{BASE}/login", wait_until="networkidle")
     page.fill("#email", "vip@minimall.dev")
     page.fill("#password", "Demo@123456")
@@ -116,6 +118,7 @@ with sync_playwright() as p:
 
     # ---------- 6. 会员升级验证（demo 预置 7999 元 → 买 798 元跨过 8000 阈值） ----------
     db_exec("UPDATE user SET accumulatedSpentCents = 799900 WHERE email = 'demo@minimall.dev'")
+    page.context.clear_cookies()
     page.goto(f"{BASE}/login", wait_until="networkidle")
     page.fill("#email", "demo@minimall.dev")
     page.fill("#password", "Demo@123456")
@@ -142,6 +145,7 @@ with sync_playwright() as p:
     check("demo升级为心悦1", True)
 
     # ---------- 7. 管理端 ----------
+    page.context.clear_cookies()
     page.goto(f"{BASE}/login", wait_until="networkidle")
     page.fill("#email", "admin@minimall.dev")
     page.fill("#password", "Admin@123456")

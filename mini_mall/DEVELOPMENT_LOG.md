@@ -229,6 +229,21 @@
 
 ---
 
+## 阶段 9：最终安全审查 + CAS 竞态修复（2026-08-16）
+
+**安全审查**（security-review skill 因无 git remote 无法自动跑 → 派遣安全专项子代理，逐 handler 核对最终代码）：
+- **评级：有条件安全**——无 Critical 漏洞；授权/金额/库存/注入/XSS/重定向/依赖（npm audit 0 漏洞）逐项验证通过
+- **Important 5 项**：mockPay 模拟支付直通（上线业务决策）、**状态流转 TOCTOU 竞态**（本次修复）、PENDING 订单无 TTL（上线待办）、seed 明文密码（上线治理）、Postgres 适配器缺失（部署阻塞）
+- **Minor 8 项**：安全响应头、serverless 限流、trustedOrigins、cancelReason 长度、orderNo 熵、邮箱验证、审计日志、错误细节——记入 CLAUDE.md 部署清单
+
+**CAS 竞态修复**（切 Postgres 前必须）：3 处状态流转（mockPay / cancelOrder / admin PUT）从"读后无条件 update"改为**条件更新**（`updateMany({ where: { ..., status: 原状态 } })` + `count !== 1` 抛错回滚），并发支付/取消/管理员流转时后到者整体回滚，杜绝"已支付又被取消"+ 库存双归还。
+
+**数据库中文损坏事件（重大教训）**：回归验证时用 **curl 命令行传中文参数**（`-d '{"name":"智能手机"...}'`），Windows 终端 GBK 编码 → 服务器按 UTF-8 解析成 U+FFFD 替换符 → 商品名写入"锟斤拷"、LIKE 搜索全部失效。修复：重跑 seed（UTF-8 源文件幂等重写）。**教训：Windows 命令行传中文给 curl/API 会编码损坏，必须用 Playwright/CDP 或 UTF-8 文件方式；E2E 脚本不受影响（CDP 传 UTF-8）。**
+
+**最终回归**：E2E 21/21 通过（脚本适配：切换账号前 clear_cookies——验证"已登录自动跳首页"功能正确生效；page.context 是属性非方法）。
+
+---
+
 ## 附录：与计划的偏差汇总
 
 | 计划项 | 实际 | 原因 |
