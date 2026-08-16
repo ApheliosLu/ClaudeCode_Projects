@@ -78,6 +78,18 @@ taskkill /F /PID <PID>                          # cmd / PowerShell 里用单斜�
 
 > 注意：关机后服务器不会自动启动，需重新 `npm start`。数据（dev.db）和构建产物（.next）都在磁盘上，不会丢失。开机自启可把启动命令放进 Windows 启动文件夹（`shell:startup`）或使用 PM2。
 
+### 终端语法对照（后台启动 / 进程操作）
+
+`npm start` 是**前台进程**：直接关掉终端窗口 = 服务停止。想"关窗口但服务继续跑"用后台方式：
+
+| 操作 | Git Bash | cmd | PowerShell |
+| --- | --- | --- | --- |
+| 后台启动 | `nohup npm start &` | `start /b npm start` | `Start-Process cmd -ArgumentList "/c","npm start" -WindowStyle Hidden` |
+| 杀进程 | `taskkill //F //PID x` | `taskkill /F /PID x` | `taskkill /F /PID x` |
+
+> 坑：`start` 是 cmd 专属语法，PowerShell 里它是 `Start-Process` 的别名，直接输 `start /b ...` 会报"找不到位置形式参数"。在 PowerShell 里先输入 `cmd` 回车进入命令提示符模式，再执行 cmd 语法即可。
+> 长期运行建议用 PM2：`pm2 start "npm start" --name mini-mall` + `pm2 save` + `pm2 startup`（崩溃自动重启 + 开机自启）。
+
 ## 部署（Vercel）
 
 1. 数据库切 PostgreSQL：`prisma/schema.prisma` 的 `datasource.provider` 改为 `postgresql`，`DATABASE_URL` 指向 Neon/Prisma Postgres 的 `postgresql://` 连接串（**不要用 `prisma://`**，规避 Vercel issue #79063）
