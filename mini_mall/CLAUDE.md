@@ -86,6 +86,7 @@ mini_mall/
 - **better-auth**：`src/lib/auth.ts` 模块顶层不得调用 `next/headers`（seed 脚本 tsx 环境可复用）；getSession 在辅助函数内才 `await headers()`
 - **购物车水合**：Zustand persist 的客户端组件用 mounted 标志防 hydration mismatch
 - `prisma/dev.db`、`src/generated/`、`.env` 不入库；新功能先建 Git 分支（上层仓库管理）
+- **每个 Phase 完成后必须更新 `DEVELOPMENT_LOG.md`**（记录实际步骤、与计划的差异、遇到的问题与解决方案），并提交一次 git
 
 <!-- superpowers-zh:begin (do not edit between these markers) -->
 # Superpowers-ZH 中文增强版
