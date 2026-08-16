@@ -58,6 +58,7 @@
    - **用户账号推迟到 Phase C**：seed 建用户须经 better-auth 注册（正确哈希密码），依赖认证模块落地，计划偏差。
 
 **遇到的问题与解决**：
+
 - npm 安装超时：转后台继续，不中断（此后大命令直接加长 timeout 或后台执行）。
 - schema.prisma 首次写入被拒：用户要求先写 CLAUDE.md → 调整顺序后完成。
 - **prisma.config.ts 位置错误（本阶段最大问题）**：Prisma 7 CLI 只在**项目根目录**查找 `prisma.config.ts`，我按计划误放为 `prisma/config.ts`，导致 CLI 回退 schema 内读 url 而报 "datasource.url property is required"。诊断：tsx 单独加载 config 正常（url 已解析），排除 dotenv 问题 → 确认是文件位置。解决：`mv prisma/config.ts prisma.config.ts`。
@@ -87,6 +88,7 @@
    - 首页/登录页 200；未登录 /orders、/admin → 307 /login?callbackURL=…；登录后 /orders 放行（404 因页面未建，属正常）；非 ADMIN 访问 /admin → 307 首页；错误密码 401。
 
 **遇到的问题与解决**：
+
 - **better-auth 1.6 API 变化**：`auth.handlers` 不存在（TS 报错）。第一次尝试 `auth.handler`（单数函数），Next 路由要求 {GET, POST} 导出又不匹配 → 用官方适配器 `toNextJsHandler(auth)` 解决。
 - **shadcn init 交互卡住**：`-y` 不能跳过组件库/预设选择 → 查 help 发现 `-b base -p nova` 参数，非交互完成。
 
@@ -116,6 +118,7 @@
    - 注：与项目买家端 Server Actions 架构并存，届时把 skill 生成物调整为 REST 形态（保留安全约定）。
 
 **遇到的问题与解决**：
+
 - **Base UI 组件 API 差异（3 处修复）**：shadcn Base UI 版 Button 不支持 Radix `asChild` → 改用 `render={<Link/>}`（TS 报错定位）。
 - **Prisma 7 生成类型**：模型类型名为 `ProductModel` 非 `Product`；基础类型不含 include relation → ProductCard 改自有 DTO 类型。
 - **createOrder 错误处理缺陷（自检发现）**：商品校验 throw 在 try 块外会变 500 → 重构为整体 try/catch 返回 `{ error }`；`orderNo` 作用域同步修复。
@@ -160,6 +163,7 @@
 4. **实测** ✅：admin 登录 → 分类创建 → 商品创建（¥12.34 → 1234 分）→ 更新（改价+下架）→ 删除有商品分类被拒(400) → 软删除 → 清理测试数据；demo 用户访问 admin API 401；9 个页面全部 200
 
 **遇到的问题与解决（两个 Next.js 路由架构坑）**：
+
 - **同层级动态段参数名必须一致**：`(shop)/products/[slug]` 与 `(admin)/products/[id]/edit` 同为 `/products/[x]` 段 → 报 "different slug names for the same dynamic path" 导致全站 500 → 统一商品标识为 slug（API 同步改为 `/api/admin/products/[slug]`，sed 误替换产生变量名冲突后手工重写）。
 - **路由组不产生 URL 前缀**：`(admin)/products` 真实路径是 `/products`，与买家 `(shop)/products` 撞车（"two parallel pages resolve to same path"）→ 管理端整体移到真实目录 `app/admin/`。
 - dev server 锁定目录导致 mv Permission denied → 先 taskkill 端口进程再移动。
@@ -175,12 +179,14 @@
 **崩溃栈**：`node::RemoveEnvironmentCleanupHook` 断言失败 `(env) != nullptr` + `Statement::scalar deleting destructor` + X509/OpenSSL 清理帧。
 
 **排查过程**：
+
 1. Turbopack dev 崩溃 → 怀疑打包器 → `next dev --webpack`（Next 16 仍支持）→ 同样崩溃
 2. better-sqlite3 单独跑（tsx 脚本查询+断开）→ **正常**，排除驱动本体问题
 3. 生产模式 `next start` → 同样崩溃（首个请求 200 后进程亡）
 4. 结论：**better-sqlite3 原生模块在 Node 24.19 的 Next.js 进程内存在确定性崩溃**（任何模式）
 
 **解决方案**：数据库驱动换成 Prisma 官方 **libsql adapter**（`@prisma/adapter-libsql` + `@libsql/client`，类名 `PrismaLibSql` 注意大小写），同样读写本地 SQLite 文件，无原生 addon 崩溃问题。`src/lib/prisma.ts` 与 `prisma/seed.ts` 同步替换。
+
 - 验证：seed 幂等重跑正常 → 重建 → **6 轮 × 3 页面连续 200 无崩溃** → admin 登录 + 管理端全页面/API 200
 - 教训：`serverExternalPackages` 配置对解决原生 addon 崩溃无效（问题在驱动本身不在打包）
 
@@ -201,6 +207,7 @@
 3. **已安装**（Miniforge py314，工具层）：`playwright 1.62.0`（+ pyee/greenlet 依赖）——未下载浏览器（用系统 Edge）
 
 **遇到的问题与解决**：
+
 - **注册成功误判**：`content()` 抓取时表单 input value 混入判定 → 改等 header 显示用户名（wait_for_selector）。
 - **管理端页面客户端崩溃**："Failed to load chunk"——收尾文件新增后未 rebuild，next start 跑旧产物 → 重新 build 解决。
 - **新建商品保存无反应**：`select_option(index=0)` 选中占位项"请选择分类"（value=""），HTML5 required 校验拦截提交 → 改用 `label="数码电子"`。
@@ -216,6 +223,7 @@
 **过程**：requesting-code-review skill 派遣审查子代理（general-purpose），审查 master..HEAD 全部 8 个 commit。结论：核心架构/金额/并发安全符合计划，**1 Critical + 3 Important + 11 Minor**，评估"修完再合"。
 
 **已修复（Critical + Important 全部）**：
+
 1. **[Critical] 管理端下架按钮恒 404**：DELETE 传 `p.id`（cuid）但 API 按 `[slug]` 查询 → 改传 `p.slug`。回归验证：DELETE 200 + PUT 恢复 200（含图片重建）。
 2. **[Important] 买家可取消已支付订单（越权）**：cancelOrder 复用共享白名单（PAID/SHIPPED 也允许 CANCELLED）→ 显式校验 `status === "PENDING"`，买家取消仅限待支付，管理员取消仍走白名单。
 3. **[Important] 缺 postinstall: prisma generate**（CLAUDE.md 声称有但实际无，Vercel 构建必挂）→ 补上 package.json script，与文档一致。
@@ -232,6 +240,7 @@
 ## 阶段 9：最终安全审查 + CAS 竞态修复（2026-08-16）
 
 **安全审查**（security-review skill 因无 git remote 无法自动跑 → 派遣安全专项子代理，逐 handler 核对最终代码）：
+
 - **评级：有条件安全**——无 Critical 漏洞；授权/金额/库存/注入/XSS/重定向/依赖（npm audit 0 漏洞）逐项验证通过
 - **Important 5 项**：mockPay 模拟支付直通（上线业务决策）、**状态流转 TOCTOU 竞态**（本次修复）、PENDING 订单无 TTL（上线待办）、seed 明文密码（上线治理）、Postgres 适配器缺失（部署阻塞）
 - **Minor 8 项**：安全响应头、serverless 限流、trustedOrigins、cancelReason 长度、orderNo 熵、邮箱验证、审计日志、错误细节——记入 CLAUDE.md 部署清单

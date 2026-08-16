@@ -14,6 +14,7 @@
 **买家**：浏览商品（搜索/分类筛选/排序）→ 商品详情 → 注册登录 → 购物车 → 下单 → 模拟支付 → 查看订单 → 会员中心
 
 **会员**（按累计实付升级，只升不降，新订单生效）：
+
 | 等级 | 累计实付 | 后续折扣 |
 | --- | --- | --- |
 | 心悦1 | ≥ ¥8,000 | 9.8 折 |
@@ -45,9 +46,9 @@ npm run dev        # http://localhost:3000
 
 | 账号 | 密码 | 角色 | 用途 |
 | --- | --- | --- | --- |
-| admin@minimall.dev | Admin@123456 | ADMIN | 管理端 `/admin` |
-| demo@minimall.dev | Demo@123456 | USER | 普通买家（可测会员升级） |
-| vip@minimall.dev | Demo@123456 | USER（心悦2） | 会员折扣演示（9.5 折） |
+| <admin@minimall.dev> | Admin@123456 | ADMIN | 管理端 `/admin` |
+| <demo@minimall.dev> | Demo@123456 | USER | 普通买家（可测会员升级） |
+| <vip@minimall.dev> | Demo@123456 | USER（心悦2） | 会员折扣演示（9.5 折） |
 
 ## 常用命令
 
