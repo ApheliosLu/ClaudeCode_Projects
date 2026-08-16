@@ -100,5 +100,5 @@ taskkill /F /PID <PID>                          # cmd / PowerShell 里用单斜�
 ## 文档
 
 - 完整规格：`C:\Users\q1209\.claude\plans\mini-mall-github-misty-newell.md`
-- 开发实录（实际过程/问题/解决方案）：[DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md)
+- 开发实录（实际过程/问题/解决方案）：[docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)
 - 项目约定（架构/命令/账号）：[CLAUDE.md](CLAUDE.md)

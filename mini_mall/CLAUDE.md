@@ -1,8 +1,8 @@
 # mini_mall — 微型电商全栈应用
 
-学习用 Claude Code 从零搭建完整前后端电商项目，目标可部署到互联网（Vercel）。完整规格见计划文件 `C:\Users\q1209\.claude\plans\mini-mall-github-misty-newell.md`；实际开发过程、问题与解决方案见 [DEVELOPMENT_LOG.md](DEVELOPMENT_LOG.md)（开发实录，与计划对比）。
+学习用 Claude Code 从零搭建完整前后端电商项目，目标可部署到互联网（Vercel）。完整规格见计划文件 `C:\Users\q1209\.claude\plans\mini-mall-github-misty-newell.md`；实际开发过程、问题与解决方案见 [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)（开发实录，与计划对比）。
 
-项目文档：README（快速开始/账号）· [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)（部署上线步骤）· [LEARNING_ROADMAP.md](LEARNING_ROADMAP.md)（学习复盘与全栈路线）· [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)（逐文件目录结构）
+项目文档：README（快速开始/账号）· [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md)（部署上线步骤）· [docs/LEARNING_ROADMAP.md](docs/LEARNING_ROADMAP.md)（学习复盘与全栈路线）· [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md)（逐文件目录结构）
 
 ## 技术栈（2026-08 确认）
 
@@ -95,7 +95,7 @@ mini_mall/
 - **better-auth**：`src/lib/auth.ts` 模块顶层不得调用 `next/headers`（seed 脚本 tsx 环境可复用）；getSession 在辅助函数内才 `await headers()`
 - **购物车水合**：Zustand persist 的客户端组件用 mounted 标志防 hydration mismatch
 - `prisma/dev.db`、`src/generated/`、`.env` 不入库；新功能先建 Git 分支（上层仓库管理）
-- **每个 Phase 完成后必须更新 `DEVELOPMENT_LOG.md`**（记录实际步骤、与计划的差异、遇到的问题与解决方案），并提交一次 git
+- **每个 Phase 完成后必须更新 `docs/DEVELOPMENT_LOG.md`**（记录实际步骤、与计划的差异、遇到的问题与解决方案），并提交一次 git
 
 <!-- superpowers-zh:begin (do not edit between these markers) -->
 # Superpowers-ZH 中文增强版

@@ -1,6 +1,6 @@
 # mini_mall 项目目录结构（逐文件）
 
-> 实际文件清单（2026-08-16，提交 86fd061 后）。排除：`node_modules/`、`.next/`、`src/generated/`（Prisma 生成，postinstall 重建）、`dev.db`（本地库）、`.env`（本地配置）。
+> 实际文件清单（2026-08-16，docs/ 归类整理后）。排除：`node_modules/`、`.next/`、`src/generated/`（Prisma 生成，postinstall 重建）、`dev.db`（本地库）、`.env`（本地配置）。
 
 ```
 mini_mall/
@@ -9,6 +9,11 @@ mini_mall/
 │  ├─ settings.local.json              # 本地个性化（不入库）
 │  └─ skills/                          # 20 个 superpowers-zh skills + api-crud-generator
 │                                     # （各 skill 清单见 CLAUDE.md superpowers 段）
+├─ docs/                               # 项目文档（分类整理）
+│  ├─ DEVELOPMENT_LOG.md               # 开发实录（9 个阶段，与计划对比，含排障过程）
+│  ├─ LEARNING_ROADMAP.md              # 学习复盘与全栈工程师路线图
+│  ├─ PROJECT_STRUCTURE.md             # 本文档（逐文件目录结构）
+│  └─ DEPLOYMENT_GUIDE.md              # 部署上线步骤（Vercel + Neon）
 ├─ e2e/
 │  ├─ full-flow-test.py                # E2E 全流程测试（Playwright + Edge，21 项断言）
 │  └─ README.md                        # E2E 运行说明（备份/恢复数据库）
@@ -102,22 +107,31 @@ mini_mall/
 ├─ .env                                # 本地环境变量（不入库）
 ├─ .env.example                        # 环境变量模板
 ├─ .gitignore
+├─ .markdownlint.json                  # markdownlint 配置（中文文档规则适配）
 ├─ AGENTS.md                           # create-next-app 生成的 AI 代理说明
-├─ CLAUDE.md                           # 项目约定（架构/命令/账号/上线清单）
-├─ README.md                           # 快速开始/功能/账号/部署
-├─ DEPLOYMENT_GUIDE.md                 # 部署上线步骤（Vercel + Neon）
-├─ DEVELOPMENT_LOG.md                  # 开发实录（9 个阶段，与计划对比）
-├─ LEARNING_ROADMAP.md                 # 学习复盘与全栈工程师路线图
-├─ PROJECT_STRUCTURE.md                # 本文档
+├─ CLAUDE.md                           # 项目约定（架构/命令/账号/上线清单）——必须留根目录
+├─ README.md                           # 快速开始/功能/账号/部署——留根目录（GitHub/Vercel 惯例）
 ├─ components.json                     # shadcn 配置
 ├─ eslint.config.mjs                   # ESLint 配置（ignore: generated/skills）
 ├─ next.config.ts                      # Next 配置（serverExternalPackages）
 ├─ package.json                        # 依赖 + 脚本（含 postinstall: prisma generate）
 ├─ postcss.config.mjs                  # PostCSS（Tailwind v4）
 ├─ prisma.config.ts                    # Prisma 7 CLI 配置（必须位于项目根）
-├─ tsconfig.json                       # TS 配置（@/* → src/*）
-└─ tsconfig.tsbuildinfo                # 构建缓存（gitignore）
+└─ tsconfig.json                       # TS 配置（@/* → src/*）
 ```
+
+## 目录分类逻辑
+
+| 目录 | 用途 | 能否移动 |
+| --- | --- | --- |
+| `src/` | 应用源码（路由/组件/逻辑） | 否（框架约定） |
+| `prisma/` | 数据模型/迁移/种子 | 否（框架约定） |
+| `docs/` | **项目文档**（实录/路线/结构/部署） | ✅ 本次已归类 |
+| `e2e/` | E2E 测试 | ✅ 已归类 |
+| `public/` | 静态资源 | 否（框架约定） |
+| `.claude/` | Claude Code 配置 + skills | 否（工具约定） |
+| 根目录配置文件 | package/next/ts/eslint/prisma 等 | **否**（构建工具在根目录查找，移动即失效） |
+| `README.md` / `CLAUDE.md` | 惯例固定位置 | 否（README 是 GitHub/Vercel 惯例；CLAUDE.md 是 Claude Code 加载机制） |
 
 ## 关键结构说明
 
