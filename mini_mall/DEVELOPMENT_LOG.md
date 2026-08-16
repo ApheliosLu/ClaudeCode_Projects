@@ -145,6 +145,49 @@
 
 ---
 
+## 阶段 5：管理端（Phase F，2026-08-16）
+
+**计划**：用户指定用 api-crud-generator skill 生成 REST API 形态的三个模块（商品/订单/分类）+ 仪表盘，全部 ADMIN 校验。
+
+**实际过程**：
+
+1. **API 层** ✅（全部 `{ success, data, error }` 格式 + `getAdminSession()` 401 拦截 + Zod 校验）
+   - 商品：GET(列表?q&all) + POST(创建) `/api/admin/products`；GET(详情) + PUT(更新，图片全量重建，isActive 可恢复上架) + DELETE(软删除) `/api/admin/products/[slug]`
+   - 订单：GET(列表?status&q) `/api/admin/orders`；PUT(状态流转 SHIPPED/DELIVERED/CANCELLED，白名单状态机 + 取消归还库存 + 必须填原因) `/api/admin/orders/[id]`
+   - 分类：GET(含商品数) + POST `/api/admin/categories`；DELETE(有商品引用拒绝 400) `/api/admin/categories/[id]`
+2. **页面** ✅：商品管理（表格+搜索+下架/编辑）、新增/编辑表单（ProductForm 共享）、订单管理（状态筛选 tab + 流转按钮，prompt 填取消原因）、分类管理（列表+新增表单）、仪表盘（订单数/销售额/最近 10 单）
+3. **鉴权**：API 内 `getAdminSession()`（401）；页面由 `app/admin/layout.tsx` 的 `requireAdmin()` 兜底
+4. **实测** ✅：admin 登录 → 分类创建 → 商品创建（¥12.34 → 1234 分）→ 更新（改价+下架）→ 删除有商品分类被拒(400) → 软删除 → 清理测试数据；demo 用户访问 admin API 401；9 个页面全部 200
+
+**遇到的问题与解决（两个 Next.js 路由架构坑）**：
+- **同层级动态段参数名必须一致**：`(shop)/products/[slug]` 与 `(admin)/products/[id]/edit` 同为 `/products/[x]` 段 → 报 "different slug names for the same dynamic path" 导致全站 500 → 统一商品标识为 slug（API 同步改为 `/api/admin/products/[slug]`，sed 误替换产生变量名冲突后手工重写）。
+- **路由组不产生 URL 前缀**：`(admin)/products` 真实路径是 `/products`，与买家 `(shop)/products` 撞车（"two parallel pages resolve to same path"）→ 管理端整体移到真实目录 `app/admin/`。
+- dev server 锁定目录导致 mv Permission denied → 先 taskkill 端口进程再移动。
+
+**下一步（计划）**：Phase G 收尾（E2E 全流程 + 构建验证 + README）→ 整体 /review。
+
+---
+
+## 阶段 6：服务器崩溃排障（2026-08-16，重大环境问题）
+
+**症状**：浏览器访问 localhost:3000 报 ERR_CONNECTION_REFUSED / Internal Server Error；dev server 与生产模式均崩溃，exit code 134（SIGABRT）。
+
+**崩溃栈**：`node::RemoveEnvironmentCleanupHook` 断言失败 `(env) != nullptr` + `Statement::scalar deleting destructor` + X509/OpenSSL 清理帧。
+
+**排查过程**：
+1. Turbopack dev 崩溃 → 怀疑打包器 → `next dev --webpack`（Next 16 仍支持）→ 同样崩溃
+2. better-sqlite3 单独跑（tsx 脚本查询+断开）→ **正常**，排除驱动本体问题
+3. 生产模式 `next start` → 同样崩溃（首个请求 200 后进程亡）
+4. 结论：**better-sqlite3 原生模块在 Node 24.19 的 Next.js 进程内存在确定性崩溃**（任何模式）
+
+**解决方案**：数据库驱动换成 Prisma 官方 **libsql adapter**（`@prisma/adapter-libsql` + `@libsql/client`，类名 `PrismaLibSql` 注意大小写），同样读写本地 SQLite 文件，无原生 addon 崩溃问题。`src/lib/prisma.ts` 与 `prisma/seed.ts` 同步替换。
+- 验证：seed 幂等重跑正常 → 重建 → **6 轮 × 3 页面连续 200 无崩溃** → admin 登录 + 管理端全页面/API 200
+- 教训：`serverExternalPackages` 配置对解决原生 addon 崩溃无效（问题在驱动本身不在打包）
+
+**下一步（计划）**：Phase G 收尾（README、gitignore、提交）→ 整体 E2E 测试 → /review。
+
+---
+
 ## 附录：与计划的偏差汇总
 
 | 计划项 | 实际 | 原因 |

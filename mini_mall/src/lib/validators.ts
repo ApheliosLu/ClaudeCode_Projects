@@ -33,6 +33,7 @@ export const productSchema = z.object({
   categoryId: z.string().min(1, "请选择分类"),
   images: z.string().max(2000), // 逗号分隔的图片 URL
   featured: z.boolean().optional(),
+  isActive: z.boolean().optional(),
 });
 
 /** 模拟支付 */

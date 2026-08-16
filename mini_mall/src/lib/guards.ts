@@ -25,3 +25,9 @@ export async function requireAdmin() {
   }
   return session;
 }
+
+/** API Route 专用：管理员 session，非 ADMIN 返回 null（由 handler 返回 401） */
+export async function getAdminSession() {
+  const session = await getSession();
+  return session?.user.role === "ADMIN" ? session : null;
+}

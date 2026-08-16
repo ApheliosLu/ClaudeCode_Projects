@@ -1,13 +1,14 @@
 // Prisma 客户端单例 + driver adapter 工厂
-// 本地 file: → better-sqlite3；部署（postgresql://）→ pg（Vercel 部署前补充）
+// 本地 file: → libsql（替代 better-sqlite3：规避 Node 24 下原生模块崩溃）
+// 部署（postgresql://）→ pg（Vercel 部署前补充）
 import { PrismaClient } from "@/generated/prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaLibSql } from "@prisma/adapter-libsql";
 
 function createPrismaClient(): PrismaClient {
   const url = process.env.DATABASE_URL!;
   if (url.startsWith("file:")) {
-    // 本地开发：SQLite（better-sqlite3 原生驱动）
-    const adapter = new PrismaBetterSqlite3({ url });
+    // 本地开发：SQLite（libsql 驱动，无原生 addon 崩溃问题）
+    const adapter = new PrismaLibSql({ url });
     return new PrismaClient({ adapter });
   }
   // 部署环境：PostgreSQL（需安装 @prisma/adapter-pg + pg）

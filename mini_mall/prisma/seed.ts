@@ -1,10 +1,10 @@
 // 种子数据：4 分类 × 16 商品 + 3 个演示账号（幂等，可重复执行）
 import "dotenv/config";
 import { PrismaClient } from "../src/generated/prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaLibSql } from "@prisma/adapter-libsql";
 import { auth } from "../src/lib/auth";
 
-const adapter = new PrismaBetterSqlite3({ url: process.env.DATABASE_URL! });
+const adapter = new PrismaLibSql({ url: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 
 // 演示账号（经 better-auth 注册，确保密码哈希与认证逻辑一致）
