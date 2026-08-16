@@ -5,6 +5,7 @@ import { requireAuth } from "@/lib/guards";
 import { prisma } from "@/lib/prisma";
 import { formatCents } from "@/lib/utils";
 import { OrderStatusBadge } from "@/components/OrderStatusBadge";
+import { CancelOrderButton } from "@/components/CancelOrderButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -39,9 +40,12 @@ export default async function OrderDetailPage({
       {order.status === "PENDING" && (
         <div className="mb-6 flex items-center justify-between rounded-lg bg-amber-50 p-4">
           <p className="text-sm text-amber-800">订单待支付，支付成功后开始发货流程</p>
-          <Button size="sm" render={<Link href={`/pay/${order.orderNo}`} />}>
-            去支付
-          </Button>
+          <div className="flex items-center gap-2">
+            <CancelOrderButton orderNo={order.orderNo} />
+            <Button size="sm" render={<Link href={`/pay/${order.orderNo}`} />}>
+              去支付
+            </Button>
+          </div>
         </div>
       )}
 

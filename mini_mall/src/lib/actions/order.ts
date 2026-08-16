@@ -5,9 +5,11 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/guards";
-import { createOrderSchema } from "@/lib/validators";
-import { getTier, applyDiscount } from "@/lib/membership";
+import { createOrderSchema, mockPaySchema } from "@/lib/validators";
+import { getTier, applyDiscount, getUpgradedLevel } from "@/lib/membership";
+import { canTransition } from "@/lib/order-machine";
 import { genOrderNo } from "@/lib/utils";
+import type { OrderStatus } from "@/generated/prisma/enums";
 
 export type ActionResult = { error: string } | { orderNo: string };
 
@@ -87,4 +89,101 @@ export async function createOrder(input: unknown): Promise<ActionResult> {
     // 事务已回滚（库存自动还原）
     return { error: e instanceof Error ? e.message : "下单失败，请稍后重试" };
   }
+}
+
+/** 模拟支付：PENDING → PAID，事务内累加会员累计金额并升级（只升不降） */
+export async function mockPay(input: unknown): Promise<ActionResult> {
+  const session = await requireAuth();
+
+  const parsed = mockPaySchema.safeParse(input);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "参数错误" };
+  }
+  const { orderNo, channel } = parsed.data;
+
+  // 归属校验（复用支付页同样的校验）
+  const order = await prisma.order.findUnique({ where: { orderNo } });
+  if (!order || order.userId !== session.user.id) {
+    return { error: "订单不存在" };
+  }
+
+  try {
+    // 模拟支付网关延迟
+    await new Promise((r) => setTimeout(r, 1200));
+
+    await prisma.$transaction(async (tx) => {
+      // 状态机校验（事务内重查，防并发）
+      const fresh = await tx.order.findUnique({ where: { orderNo } });
+      if (!fresh) throw new Error("订单不存在");
+      if (!canTransition(fresh.status as OrderStatus, "PAID")) {
+        throw new Error("当前订单状态不允许支付");
+      }
+
+      await tx.order.update({
+        where: { orderNo },
+        data: { status: "PAID", paidAt: new Date(), paymentChannel: channel },
+      });
+
+      // 会员：累计实付累加 + 按阈值升级（只升不降）
+      const user = await tx.user.findUnique({ where: { id: session.user.id } });
+      if (!user) throw new Error("用户不存在");
+      const newAccumulated = user.accumulatedSpentCents + fresh.totalCents;
+      const newLevel = getUpgradedLevel(newAccumulated);
+      await tx.user.update({
+        where: { id: user.id },
+        data: {
+          accumulatedSpentCents: newAccumulated,
+          ...(newLevel > user.membershipLevel ? { membershipLevel: newLevel } : {}),
+        },
+      });
+    });
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "支付失败，请稍后重试" };
+  }
+
+  revalidatePath(`/orders/${orderNo}`);
+  revalidatePath("/membership");
+  return { orderNo };
+}
+
+/** 买家取消订单：仅 PENDING 可取消，事务内归还库存（累计金额不回退） */
+export async function cancelOrder(orderNo: string): Promise<ActionResult> {
+  const session = await requireAuth();
+
+  const order = await prisma.order.findUnique({
+    where: { orderNo },
+    include: { items: true },
+  });
+  if (!order || order.userId !== session.user.id) {
+    return { error: "订单不存在" };
+  }
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const fresh = await tx.order.findUnique({ where: { orderNo } });
+      if (!fresh) throw new Error("订单不存在");
+      if (!canTransition(fresh.status as OrderStatus, "CANCELLED")) {
+        throw new Error("当前订单状态不允许取消");
+      }
+
+      await tx.order.update({
+        where: { orderNo },
+        data: { status: "CANCELLED", cancelledAt: new Date() },
+      });
+
+      // 归还库存（按快照数量）
+      for (const item of order.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stock: { increment: item.quantity } },
+        });
+      }
+    });
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "取消失败，请稍后重试" };
+  }
+
+  revalidatePath(`/orders/${orderNo}`);
+  revalidatePath("/products", "layout");
+  return { orderNo };
 }

@@ -126,6 +126,25 @@
 
 ---
 
+## 阶段 4：模拟支付与会员升级（Phase E，2026-08-16）
+
+**计划**：pay/[orderNo] 预校验 → mockPay（1.2s 延迟 + 事务内会员累加/升级 + PAID）→ cancelOrder（归还库存）。
+
+**实际过程**：
+
+1. **mockPay** ✅：Zod 校验（orderNo + channel: alipay/wechat/unionpay）→ 归属校验 → 1.2s 模拟网关延迟 → 事务内：状态机校验（canTransition PENDING→PAID，事务内重查防并发）→ PAID + paidAt + paymentChannel → **会员累加**（accumulatedSpentCents += 本单实付）→ **升级判断**（getUpgradedLevel 取最高满足等级，只升不降）
+2. **cancelOrder** ✅：仅买家本人 + PENDING 可取消 → 事务内 CANCELLED + **归还库存**（按 OrderItem 快照数量 increment）→ 累计金额不回退
+3. **支付页** ✅：`pay/[orderNo]` Server Component 预校验（登录 + 归属 + 状态）；非 PENDING 显示结果页（已支付/已关闭）；客户端 PayForm（三渠道单选 + 确认支付按钮 loading + 错误提示）
+4. **订单详情接入** ✅：PENDING 区块加"取消订单"按钮（CancelOrderButton 客户端组件）
+
+**验证**：tsc 全绿；未登录 /pay 307 拦截；已登录访问不存在订单 404（归属校验）。完整支付链路（下单→支付→升级）留待 Phase G Playwright E2E。
+
+**遇到的问题**：无新增。沿用状态机白名单 + 事务内重查模式。
+
+**下一步（计划）**：Phase F 管理端（api-crud-generator 生成 REST API + 页面，用户指定接口清单见阶段 3 记录）。
+
+---
+
 ## 附录：与计划的偏差汇总
 
 | 计划项 | 实际 | 原因 |
