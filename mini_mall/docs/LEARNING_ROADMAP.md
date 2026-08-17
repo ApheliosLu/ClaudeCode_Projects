@@ -13,6 +13,7 @@
 | 工程安全思维 | 金额防篡改（服务端重算）、原子扣库存（防超卖）、状态机白名单、CAS 防竞态（TOCTOU）、水平越权（归属校验）、open redirect |
 | 排障能力 | 9 个阶段几十个真实问题：Node 24 原生模块崩溃（better-sqlite3 → libsql）、Windows 中文编码（GBK → U+FFFD）、路由冲突、构建产物过期、端口占用 |
 | 工程化流程 | git 分支管理、双轮审查（code review + security review）、E2E 测试（Playwright 21 项）、lint/tsc 门禁、开发实录（DEVELOPMENT_LOG.md） |
+| 框架运行机制 | Next.js 无 main()：进程入口是 next CLI（由 package.json scripts 触发，`next` 包本身是带 bin 的可执行程序）；应用入口是 src/app 约定式路由——root layout.tsx 是"外壳"、page.tsx 文件名即 URL；排查入口问题按 scripts → next bin → 路由文件三处定位 |
 
 ### 最有价值的部分
 
