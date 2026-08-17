@@ -253,6 +253,21 @@
 
 ---
 
+## 阶段 10：本地环境修复——next 命令丢失 + BETTER_AUTH_SECRET 为空（2026-08-17）
+
+**问题**：清理缓存后 `npm start` / `npm run dev` 报 `'next' 不是内部或外部命令`；`npm install` 重装后 dev 正常、start 报 `BetterAuthError: You are using the default secret`。
+
+**实际过程与解决**：
+
+1. **node_modules 不完整**：`.bin/` 目录为空、`next` 包缺失（其余 570+ 包正常）——清理工具把可执行文件当垃圾删了，npm 找不到 `next` 命令。修复：`npm install` 补装重建。教训：Windows 磁盘清理可能误伤 `node_modules/.bin`。
+2. **BETTER_AUTH_SECRET 为空（根因）**：`.env` 第 7 行 `BETTER_AUTH_SECRET=""` 是模板占位符——与 `.env.example` 字节数完全相同（400 = 400），secret 从未填过。better-auth 检测到空/默认 secret 直接抛错（fail-closed 安全设计：空值回退到源码公开默认密钥 = 无签名，任何攻击者可用默认密钥伪造会话 cookie，故宁可拒绝运行）。修复：`openssl rand -base64 32` 生成强随机值写入 `.env`。
+3. **为什么 dev"正常"、start 报错**：dev 懒加载——better-auth 模块在请求触达 auth 相关页面时才初始化，只开首页不触发校验，属"假正常"；start 时请求触发校验即暴露。另确认 **Next.js 16 生产模式（next start）不再自动加载 `.env`**（源码证据：`loadEnvConfig` 只在 dev 的 setup-dev-bundler 中调用，生产 server 从未调用；`--env` 标志在 next start 不存在）。
+4. **start 脚本兜底**：`package.json` start 改为 `node --env-file=.env node_modules/next/dist/bin/next start`（Node ≥20.6 原生 `--env-file`，无新依赖），生产模式显式加载 `.env`。提交 `7ce2195`。
+
+**教训**：`.env` 填完模板后应检查占位符是否清空（`grep -n "=\"\"" .env`）；better-auth secret 缺失的报错是安全设计而非配置 bug；Next 16 生产模式跑本地验证时必须显式加载 env。
+
+---
+
 ## 附录：与计划的偏差汇总
 
 | 计划项 | 实际 | 原因 |
