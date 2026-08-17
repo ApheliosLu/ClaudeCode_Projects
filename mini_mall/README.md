@@ -99,6 +99,11 @@ taskkill /F /PID <PID>                          # cmd / PowerShell 里用单斜�
 
 ## 文档
 
-- 完整规格：`C:\Users\q1209\.claude\plans\mini-mall-github-misty-newell.md`
-- 开发实录（实际过程/问题/解决方案）：[docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md)
-- 项目约定（架构/命令/账号）：[CLAUDE.md](CLAUDE.md)
+| 文档 | 用途 | 什么时候看 |
+| --- | --- | --- |
+| [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) | 部署上线完整步骤（数据库切换、环境变量、上线前置条件） | 准备部署 Vercel 时 |
+| [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) | 逐文件目录结构与职责 | 找代码、理解分层时 |
+| [docs/DEVELOPMENT_LOG.md](docs/DEVELOPMENT_LOG.md) | 开发实录：每阶段实际过程、问题与解决方案 | 踩坑时查"错误集" |
+| [docs/LEARNING_ROADMAP.md](docs/LEARNING_ROADMAP.md) | 学习复盘与全栈工程师路线图 | 复盘、规划学习时 |
+| [CLAUDE.md](CLAUDE.md) | 项目约定：架构、命令、账号、注意事项 | 新会话开始时（AI 自动读取） |
+| 完整规格计划文件 | 需求与规格源头（`C:\Users\q1209\.claude\plans\mini-mall-github-misty-newell.md`） | 对照计划查偏差时 |
