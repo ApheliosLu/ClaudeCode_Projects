@@ -4,6 +4,8 @@
 .aider*
 .continue/
 .cody/
+.agents/
+AGENTS.md
 
 # 密钥和凭证
 *.pem
