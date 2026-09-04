@@ -6,6 +6,7 @@
             "Bash(npm *)",
             "Bash(git *)",
             "Bash(node *)",
+            "Bash(gh *)",
             "Bash(python *)",
             "Bash(python -c ' *)"
         ],
