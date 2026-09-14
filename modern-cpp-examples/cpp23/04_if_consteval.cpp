@@ -31,11 +31,11 @@ constexpr int price_of(int item_id)
 int main()
 {
     constexpr int compile_time = price_of(7);   // 常量上下文 -> then 分支
-    std::cout << "编译期 price_of(7)  = " << compile_time << '\n';   // 700
+    std::cout << "编译期 price_of(7)  = " << compile_time << '\n';   // 700  // 输出: 编译期 price_of(7)  = 700
 
     int runtime_id = 7;                        // 运行期输入
     int runtime_val = price_of(runtime_id);    // else 分支
-    std::cout << "运行期 price_of(7)  = " << runtime_val << '\n';    // 701
+    std::cout << "运行期 price_of(7)  = " << runtime_val << '\n';    // 701  // 输出: 运行期 price_of(7)  = 701
 
     // static_assert = 编译期断言, 为假直接编译失败(与运行时 assert 不同)
     // 配合 static_assert 在编译期校验逻辑:

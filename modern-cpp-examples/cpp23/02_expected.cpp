@@ -49,24 +49,24 @@ int main()
                  .and_then([](int v) { return checked_div(v, 2); })
                  .transform([](int v) { return v * 10; });
     if (r)
-        std::cout << "成功: *r = " << *r << '\n';      // 210
+        std::cout << "成功: *r = " << *r << '\n';      // 210  // 输出: 成功: *r = 210
     else
-        std::cout << "失败: " << r.error() << '\n';
+        std::cout << "失败: " << r.error() << '\n';  // 输出(本例未走到此分支): 失败: 后跟 r.error()
 
     // ---- 失败路径: 中间任一步出错, 后续不再执行 ----
     auto bad = parse_int("abc")
                    .and_then([](int v) { return checked_div(v, 2); });
     std::cout << "bad: has_value = " << bad.has_value()
-              << ", 错误 = " << bad.error() << '\n';
+              << ", 错误 = " << bad.error() << '\n';  // 输出: bad: has_value = 0, 错误 = 含非法字符: a
 
     auto zero = parse_int("10")
                     .and_then([](int) { return checked_div(1, 0); });
-    std::cout << "zero: 错误 = " << zero.error() << '\n';
+    std::cout << "zero: 错误 = " << zero.error() << '\n';  // 输出: zero: 错误 = 除数为 0
 
     // ---- 兜底 / 防御式取值 ----
     std::cout << "parse_int(\"nope\").value_or(-1) = "
-              << parse_int("nope").value_or(-1) << '\n';
+              << parse_int("nope").value_or(-1) << '\n';  // 输出: parse_int("nope").value_or(-1) = -1
     std::cout << "parse_int(\"7\").value_or(-1)    = "
-              << parse_int("7").value_or(-1) << '\n';
+              << parse_int("7").value_or(-1) << '\n';  // 输出: parse_int("7").value_or(-1)    = 7
     return 0;
 }

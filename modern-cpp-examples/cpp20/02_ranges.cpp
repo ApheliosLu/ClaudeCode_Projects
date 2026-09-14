@@ -36,33 +36,33 @@ int main()
         | std::views::filter([](int n) { return n % 2 == 0; })
         | std::views::transform([](int n) { return n * 3; })
         | std::views::take(4);
-    std::cout << "前 4 个偶数的 3 倍: ";
+    std::cout << "前 4 个偶数的 3 倍: ";  // 输出: 前 4 个偶数的 3 倍:
     for (int v : view)
-        std::cout << v << ' ';                           // 6 12 18 24
+        std::cout << v << ' ';                           // 6 12 18 24  // 输出: 每轮输出一个元素
     std::cout << '\n';
 
     // ---- 2. 无限范围 + take: 概念直接表达, 不再怕"取过头" ----
-    std::cout << "前 5 个奇数平方: ";
+    std::cout << "前 5 个奇数平方: ";  // 输出: 前 5 个奇数平方:
     for (int v : std::views::iota(1)
                | std::views::filter([](int n) { return n % 2 == 1; })
                | std::views::transform([](int n) { return n * n; })
                | std::views::take(5))
-        std::cout << v << ' ';                           // 1 9 25 49 81
+        std::cout << v << ' ';                           // 1 9 25 49 81  // 输出: 每轮输出一个元素
     std::cout << '\n';
 
     // ---- 3. 命名空间级算法: 直接传"容器/范围" ----
     std::ranges::sort(nums);                             // C++11: sort(begin,end)
-    std::cout << "升序前 3 个: ";
+    std::cout << "升序前 3 个: ";  // 输出: 升序前 3 个:
     for (int v : nums | std::views::take(3))
-        std::cout << v << ' ';                           // 1 2 3
+        std::cout << v << ' ';                           // 1 2 3  // 输出: 每轮输出一个元素
     std::cout << '\n';
 
     // ---- 4. 投影(projection): 按字段排序, 不再写比较器 ----
     std::vector<Item> items{{"pen", 5.0}, {"book", 22.0}, {"apple", 3.5}};
     std::ranges::sort(items, {}, &Item::price);          // 第三个参数: 投影
-    std::cout << "按价格升序: ";
+    std::cout << "按价格升序: ";  // 输出: 按价格升序:
     for (const auto& it : items)
-        std::cout << it.name << '(' << it.price << ") ";
+        std::cout << it.name << '(' << it.price << ") ";  // 输出: apple(3.5) pen(5) book(22)
     std::cout << '\n';
 
     // ---- 5. 视图只"看"不"存": 要保存结果就拷出来 ----
@@ -70,9 +70,9 @@ int main()
     std::ranges::copy(nums | std::views::take(3)
                           | std::views::transform([](int v) { return v * 2; }),
                       std::back_inserter(doubled));
-    std::cout << "double 前 3 个 = { ";
+    std::cout << "double 前 3 个 = { ";  // 输出: double 前 3 个 = {
     for (int v : doubled)
-        std::cout << v << ' ';
-    std::cout << "}\n";
+        std::cout << v << ' ';  // 输出: 2 4 6
+    std::cout << "}\n";  // 输出: }
     return 0;
 }

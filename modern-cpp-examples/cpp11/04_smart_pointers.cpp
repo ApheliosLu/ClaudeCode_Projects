@@ -25,7 +25,7 @@ public:
     explicit Logger(std::string name) : name_(std::move(name)) {}
     void log(const std::string& msg) const
     {
-        std::cout << '[' << name_ << "] " << msg << '\n';
+        std::cout << '[' << name_ << "] " << msg << '\n'; // 输出: [<name_>] <msg>, 如 [main] hello unique_ptr
     }
 private:
     std::string name_;
@@ -43,24 +43,24 @@ struct Node {
     int               value;
     std::weak_ptr<Node> next;   // 弱引用: 观察对方, 不增加引用计数
     explicit Node(int v) : value(v) {}
-    ~Node() { std::cout << "~Node(" << value << ") 析构\n"; }
+    ~Node() { std::cout << "~Node(" << value << ") 析构\n"; } // 输出: ~Node(<value>) 析构, 如 ~Node(2) 析构
 };
 
 int main()
 {
     // ---- 1. unique_ptr: 独占所有权, 出作用域自动释放(即使中途抛异常) ----
     auto p = make_logger("main");
-    p->log("hello unique_ptr");
+    p->log("hello unique_ptr"); // 输出: [main] hello unique_ptr
 
     auto q = std::move(p);          // 所有权转移(移动), 转移后 p 为空
     if (!p)
-        std::cout << "p 已为空(nullptr)\n";
-    q->log("所有权已转移到 q");
+        std::cout << "p 已为空(nullptr)\n"; // 输出: p 已为空(nullptr)
+    q->log("所有权已转移到 q"); // 输出: [main] 所有权已转移到 q
 
     // ---- 2. 动态数组的现代写法(替代 new[]/delete[]) ----
     // C++98: int* a = new int[5]; ...; delete[] a;   还要自己记尺寸
     std::unique_ptr<int[]> arr(new int[5]{1, 2, 3, 4, 5});
-    std::cout << "arr[0] = " << arr[0] << "  无需手动 delete[]\n";
+    std::cout << "arr[0] = " << arr[0] << "  无需手动 delete[]\n"; // 输出: arr[0] = 1  无需手动 delete[]
     // 若元素本身更重要(动态增删/排序), 首选 std::vector<int>, 不要裸数组
 
     // ---- 3. shared_ptr: 引用计数共享所有权 ----
@@ -69,9 +69,9 @@ int main()
     auto s1 = std::make_shared<Logger>("shared");   // C++11 就有 make_shared
     {
         auto s2 = s1;                               // 计数 1 -> 2
-        std::cout << "内层 s1.use_count() = " << s1.use_count() << '\n';
+        std::cout << "内层 s1.use_count() = " << s1.use_count() << '\n'; // 输出: 内层 s1.use_count() = 2
     }                                               // s2 析构, 计数 2 -> 1
-    std::cout << "外层 s1.use_count() = " << s1.use_count() << '\n';
+    std::cout << "外层 s1.use_count() = " << s1.use_count() << '\n'; // 输出: 外层 s1.use_count() = 1
 
     // 危险示范(禁止): 同一裸指针构造两个 shared_ptr -> 双重释放
     // Logger* raw = new Logger("x");
@@ -80,13 +80,13 @@ int main()
     // ---- 4. weak_ptr: 旁观者, 不增加计数; 使用前先 lock() ----
     std::weak_ptr<Logger> w = s1;
     if (auto locked = w.lock())                    // lock 成功才拿到共享所有权
-        locked->log("weak_ptr 成功 lock");
+        locked->log("weak_ptr 成功 lock"); // 输出: [shared] weak_ptr 成功 lock
     s1.reset();                                    // s1 放弃所有权 -> 对象释放
     if (w.expired())
-        std::cout << "对象已释放, w.expired() == true\n";
+        std::cout << "对象已释放, w.expired() == true\n"; // 输出: 对象已释放, w.expired() == true
 
     // ---- 5. 循环引用: weak_ptr 破解 ----
-    std::cout << "-- 两个节点互相指向(下一轮离开作用域观察析构)--\n";
+    std::cout << "-- 两个节点互相指向(下一轮离开作用域观察析构)--\n"; // 输出: -- 两个节点互相指向(下一轮离开作用域观察析构)--
     {
         auto a = std::make_shared<Node>(1);
         auto b = std::make_shared<Node>(2);
@@ -96,8 +96,8 @@ int main()
         // 引用计数永远到不了 0, 离开作用域也不析构 —— 内存泄漏。
         // 换成 weak_ptr 后互不持有, 计数正常归零。
         if (auto sp = a->next.lock())
-            std::cout << "a 的下一节点是 " << sp->value << '\n';
-    }
-    std::cout << "(若上面打印了两次 ~Node, 说明没有泄漏)\n";
+            std::cout << "a 的下一节点是 " << sp->value << '\n'; // 输出: a 的下一节点是 2
+    } // 离开作用域时 b、a 依次析构 -> 输出: ~Node(2) 析构 | ~Node(1) 析构
+    std::cout << "(若上面打印了两次 ~Node, 说明没有泄漏)\n"; // 输出: (若上面打印了两次 ~Node, 说明没有泄漏)
     return 0;
 }

@@ -45,11 +45,11 @@ bool all_true(Ts... bs)
 template <typename... Ts>
 void print_all(Ts&&... args)
 {
-    (std::cout << ... << args) << '\n';     // ((cout << a) << b) << c
+    (std::cout << ... << args) << '\n';     // ((cout << a) << b) << c  // 输出: 所有实参拼成一行
 }
 
 // ---- 对每个参数做点事: 逗号折叠(逐个调用某个函数) ----
-void apply_one(int x) { std::cout << "处理: " << x * x << '\n'; }
+void apply_one(int x) { std::cout << "处理: " << x * x << '\n'; }  // 输出: 处理: x*x(每次调用一行)
 
 template <typename... Ts>
 void for_each_arg(Ts&&... args)
@@ -60,16 +60,23 @@ void for_each_arg(Ts&&... args)
 int main()
 {
     std::cout << "sum_all(1,2,3,4) = " << sum_all(1, 2, 3, 4) << '\n';
+    // 输出: sum_all(1,2,3,4) = 10
     std::cout << "sum_all_safe()   = " << sum_all_safe() << '\n';
+    // 输出: sum_all_safe()   = 0
     std::cout << "sum_all_safe(2.5, 1) = " << sum_all_safe(2.5, 1) << '\n';
+    // 输出: sum_all_safe(2.5, 1) = 3.5
 
     std::cout << "all_true(true, true, true) = "
-              << all_true(true, true, true) << '\n';
+              << all_true(true, true, true) << '\n';  // 输出: all_true(true, true, true) = 1
     std::cout << "all_true(true, false)      = "
-              << all_true(true, false) << '\n';
+              << all_true(true, false) << '\n';  // 输出: all_true(true, false)      = 0
 
-    print_all(1, ' ', 2.5, ' ', std::string("three"));
+    print_all(1, ' ', 2.5, ' ', std::string("three"));  // 输出: 1 2.5 three
 
     for_each_arg(1, 2, 3);                  // 逐参调用 apply_one
+    // 输出:
+    //   处理: 1
+    //   处理: 4
+    //   处理: 9
     return 0;
 }

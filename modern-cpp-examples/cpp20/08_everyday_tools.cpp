@@ -30,15 +30,15 @@ int main()
     std::vector<int> v{1, 2, 3, 4, 5, 6, 2};
     std::erase(v, 2);                                        // 删所有 == 2
     std::erase_if(v, [](int x) { return x % 2 == 0; });      // 删所有偶数
-    std::cout << "删掉 2 和所有偶数后: ";
+    std::cout << "删掉 2 和所有偶数后: ";  // 输出: 删掉 2 和所有偶数后:
     for (int x : v)
-        std::cout << x << ' ';                               // 1 3 5
+        std::cout << x << ' ';                               // 1 3 5  // 输出: 每轮输出一个元素
     std::cout << '\n';
 
     // ---- 2. 指定初始化: 字段名自解释, 缺省字段自动补 0 ----
     // C++98: Point3D p = {1, 0, 3};   哪个是 x 哪个是 z? 全凭记忆
     Point3D p{.x = 1, .z = 3};                               // y 自动为 0
-    std::cout << "p = (" << p.x << ", " << p.y << ", " << p.z << ")\n";
+    std::cout << "p = (" << p.x << ", " << p.y << ", " << p.z << ")\n";  // 输出: p = (1, 0, 3)
     // 约束: 按声明顺序写、不能重复; 但可以跳字段(如这里跳过 y)
 
     // ---- 3. 模板化 Lambda: []<typename T>(const T&) ----
@@ -51,7 +51,7 @@ int main()
         else
             return "其它";
     };
-    std::cout << describe(42) << ' ' << describe(2.5) << ' '
+    std::cout << describe(42) << ' ' << describe(2.5) << ' '  // 输出: 整数 浮点 其它
               << describe(std::string("s")) << '\n';
     return 0;
 }

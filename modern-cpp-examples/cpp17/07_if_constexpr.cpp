@@ -25,13 +25,13 @@ void describe(const T& v)
 {
     using Raw = std::decay_t<T>;
     if constexpr (std::is_integral_v<Raw>)
-        std::cout << "整数: " << v << '\n';
+        std::cout << "整数: " << v << '\n';  // 输出: 整数: 42
     else if constexpr (std::is_floating_point_v<Raw>)
-        std::cout << "浮点: " << v << '\n';
+        std::cout << "浮点: " << v << '\n';  // 输出: 浮点: 2.5
     else if constexpr (std::is_same_v<Raw, std::string>)
-        std::cout << "字符串: " << v << '\n';
+        std::cout << "字符串: " << v << '\n';  // 输出: 字符串: hello
     else
-        std::cout << "其它类型\n";
+        std::cout << "其它类型\n";  // 输出: 其它类型(本程序未走到)
 }
 
 // ---- 2. 丢弃分支不实例化: 不同调用实例化出不同返回类型 ----
@@ -50,22 +50,25 @@ auto scale_or_zero(T x)
 template <typename First, typename... Rest>
 void log_all(First&& first, Rest&&... rest)
 {
-    std::cout << first << ' ';
+    std::cout << first << ' ';  // 输出: 当前实参 + 空格(递归逐个打印, 拼成一行)
     if constexpr (sizeof...(Rest) > 0)          // 还有剩余才递归
         log_all(std::forward<Rest>(rest)...);   // 空包时这个调用根本不实例化
 }
 
 int main()
 {
-    describe(42);
-    describe(2.5);
-    describe(std::string("hello"));
+    describe(42);  // 输出: 整数: 42
+    describe(2.5);  // 输出: 浮点: 2.5
+    describe(std::string("hello"));  // 输出: 字符串: hello
 
     std::cout << "scale_or_zero(21)    = " << scale_or_zero(21) << '\n';
+    // 输出: scale_or_zero(21)    = 42
     std::cout << "scale_or_zero(\"str\") = " << scale_or_zero("str") << '\n';
+    // 输出: scale_or_zero("str") = 0
 
-    std::cout << "log_all: ";
+    std::cout << "log_all: ";  // 输出: log_all: (本行不换行, 与 log_all 打印的值拼成一行)
     log_all(1, 2.5, std::string("three"), "four");   // 无需单独的重载终点
+    // 输出: 1 2.5 three four
     std::cout << '\n';
     return 0;
 }

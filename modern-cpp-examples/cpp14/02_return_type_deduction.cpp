@@ -46,21 +46,23 @@ auto           get_origin_copy() { return g_origin; }      // -> Point (拷贝)
 
 int main()
 {
-    std::cout << add14(1, 2) << ' ' << add14(2.5, 1) << '\n';
+    std::cout << add14(1, 2) << ' ' << add14(2.5, 1) << '\n';  // 输出: 3 3.5
 
     Point& r = get_origin_ref();        // 真的拿到引用, 才能改到全局
     r.x = 42;
     std::cout << "g_origin.x = " << g_origin.x << '\n';    // 42, 证明是引用
+    // 输出: g_origin.x = 42
 
     Point  copy = get_origin_copy();    // 拷贝, 改它不影响全局
     copy.y = 99;
     std::cout << "g_origin.y 仍是 " << g_origin.y << " (拷贝不受影响)\n";
+    // 输出: g_origin.y 仍是 0 (拷贝不受影响)
 
     // lambda 返回类型推导在 C++14 也放宽: 返回闭包类型无需手写
     auto make_multiplier = [](double k) {
         return [k](double x) { return k * x; };
     };
     auto times2 = make_multiplier(2.0);
-    std::cout << "times2(21) = " << times2(21) << '\n';
+    std::cout << "times2(21) = " << times2(21) << '\n';  // 输出: times2(21) = 42
     return 0;
 }

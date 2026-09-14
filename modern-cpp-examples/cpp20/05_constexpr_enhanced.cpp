@@ -45,19 +45,20 @@ constinit int g_answer = square(4);      // 编译期常量 16; constinit 只是
 int main()
 {
     constexpr auto f6 = factorial(6);    // 编译期就算好, 零运行开销
-    std::cout << "factorial(6) = " << f6 << '\n';
+    std::cout << "factorial(6) = " << f6 << '\n';  // 输出: factorial(6) = 720
     std::cout << "factorial(5)(运行期调用) = " << factorial(5) << '\n';
+    // 输出: factorial(5)(运行期调用) = 120
 
     constexpr int sq = square(4);
-    std::cout << "square(4) = " << sq << '\n';
+    std::cout << "square(4) = " << sq << '\n';  // 输出: square(4) = 16
 
     constexpr int ce = mode();           // 常量上下文 -> 1
     int           rt = mode();           // 运行时调用   -> 2
-    std::cout << "mode(): 编译期分支 = " << ce
+    std::cout << "mode(): 编译期分支 = " << ce  // 输出: mode(): 编译期分支 = 1, 运行期分支 = 2
               << ", 运行期分支 = " << rt << '\n';
 
-    std::cout << "g_answer(初值) = " << g_answer << '\n';
+    std::cout << "g_answer(初值) = " << g_answer << '\n';  // 输出: g_answer(初值) = 16
     g_answer = 43;                       // 运行期仍可修改(constinit 非 const)
-    std::cout << "g_answer(改后) = " << g_answer << '\n';
+    std::cout << "g_answer(改后) = " << g_answer << '\n';  // 输出: g_answer(改后) = 43
     return 0;
 }

@@ -40,17 +40,17 @@ int main()
     auto f1 = std::async(std::launch::async, fib, 30);
     auto f2 = std::async(std::launch::async, fib, 33);
 
-    std::cout << "两个 fib 正在后台并行计算, 主线程可以干别的事...\n";
+    std::cout << "两个 fib 正在后台并行计算, 主线程可以干别的事...\n";   // 输出: 两个 fib 正在后台并行计算, 主线程可以干别的事...
 
-    std::cout << "fib(30) = " << f1.get() << '\n';    // 阻塞直到有结果
-    std::cout << "fib(33) = " << f2.get() << '\n';
+    std::cout << "fib(30) = " << f1.get() << '\n';    // 阻塞直到有结果  输出: fib(30) = 832040
+    std::cout << "fib(33) = " << f2.get() << '\n';   // 输出: fib(33) = 3524578
 
     // ---- 异常跨线程传播: 任务抛异常 -> get() 原样重抛 ----
     auto bad = std::async(std::launch::async, square_root, -4.0);
     try {
-        std::cout << "sqrt(-4) = " << bad.get() << '\n';
+        std::cout << "sqrt(-4) = " << bad.get() << '\n';   // 输出: sqrt(-4) = (get() 抛异常, 只写出前缀, 与下行 catch 输出拼成一行)
     } catch (const std::invalid_argument& e) {
-        std::cout << "主线程捕获子线程异常: " << e.what() << '\n';
+        std::cout << "主线程捕获子线程异常: " << e.what() << '\n';   // 输出: 主线程捕获子线程异常: 负数不能开平方
     }
     return 0;
 }

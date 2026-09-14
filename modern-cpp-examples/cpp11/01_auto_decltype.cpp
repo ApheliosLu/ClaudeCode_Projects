@@ -31,7 +31,7 @@ int main()
     // C++98: std::map<std::string,int>::iterator it = scores.find("alice");
     auto it = scores.find("alice");
     if (it != scores.end())
-        std::cout << it->first << " -> " << it->second << '\n';
+        std::cout << it->first << " -> " << it->second << '\n'; // 输出: alice -> 90
 
     // auto 剥掉顶层 const 与引用(传值语义); 想保留引用必须写 auto& / const auto&
     int          x = 1;
@@ -66,6 +66,6 @@ int main()
     (void)b;
     (void)c;
 
-    std::cout << "mul(3, 4.5) = " << mul(3, 4.5) << '\n';
+    std::cout << "mul(3, 4.5) = " << mul(3, 4.5) << '\n'; // 输出: mul(3, 4.5) = 13.5
     return 0;
 }

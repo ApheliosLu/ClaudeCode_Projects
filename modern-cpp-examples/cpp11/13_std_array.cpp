@@ -30,40 +30,40 @@ int main()
     // C++98: int scores[3] = {90, 85, 88};  长度与类型人肉配对
     std::array<int, 3> scores{90, 85, 88};
     std::cout << "size = " << scores.size()          // 类型自带长度
-              << ", 第 2 个 = " << scores[1] << '\n';
+              << ", 第 2 个 = " << scores[1] << '\n';   // 输出: size = 3, 第 2 个 = 85
 
     // 范围 for / 算法直接可用(C 数组要手写长度)
     std::sort(scores.begin(), scores.end());
-    std::cout << "排序后: ";
+    std::cout << "排序后: ";   // 输出: 排序后: 85 88 90
     for (int v : scores)
-        std::cout << v << ' ';
+        std::cout << v << ' ';   // 输出: 逐个元素 + 空格(拼成上一行)
     std::cout << '\n';
 
     // 整体拷贝赋值: int a2[3] = a1 是编译错误!
     std::array<int, 3> copy = scores;
     copy[0] = 0;
     std::cout << "copy[0] = " << copy[0]
-              << ", 原数组 scores[0] = " << scores[0] << " (深拷贝互不影响)\n";
+              << ", 原数组 scores[0] = " << scores[0] << " (深拷贝互不影响)\n";   // 输出: copy[0] = 0, 原数组 scores[0] = 85 (深拷贝互不影响)
 
     // at(): 越界抛 std::out_of_range(C 数组越界 = 静默 UB)
     try {
         scores.at(99);
     } catch (const std::out_of_range&) {
-        std::cout << "at(99) 越界, 异常被捕获\n";
+        std::cout << "at(99) 越界, 异常被捕获\n";   // 输出: at(99) 越界, 异常被捕获
     }
 
     // fill / 按 size() 遍历
     std::array<int, 4> zeros;
     zeros.fill(7);
-    std::cout << "fill(7) 后: ";
+    std::cout << "fill(7) 后: ";   // 输出: fill(7) 后: 7777
     for (std::size_t i = 0; i < zeros.size(); ++i)
-        std::cout << zeros[i];
+        std::cout << zeros[i];   // 输出: 逐个元素, 无分隔符(拼成 7777)
     std::cout << '\n';
 
     // 装自定义类型; 遍历/算法照常
     std::array<Item, 2> cart{{{"apple", 3}, {"book", 1}}};
     for (const auto& it : cart)
-        std::cout << it.name << " x" << it.qty << ' ';
+        std::cout << it.name << " x" << it.qty << ' ';   // 输出: apple x3 book x1 (每项后带空格, 拼成一行)
     std::cout << '\n';
     return 0;
 }

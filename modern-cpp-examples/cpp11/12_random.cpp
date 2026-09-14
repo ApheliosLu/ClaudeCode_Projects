@@ -26,24 +26,24 @@ int main()
     std::random_device rd;                       // 硬件熵(随机种子源)
     std::mt19937       gen(rd());                // 引擎: 梅森旋转
     std::uniform_int_distribution<int> dice(1, 6);
-    std::cout << "掷 6 次骰子: ";
+    std::cout << "掷 6 次骰子: ";   // 输出(示例, 每次运行数值不同): 掷 6 次骰子: 5 3 2 6 1 1
     for (int i = 0; i < 6; ++i)
-        std::cout << dice(gen) << ' ';
+        std::cout << dice(gen) << ' ';   // 输出: 每个点数 + 空格(拼成上一行)
     std::cout << '\n';
 
     // ---- 2. [0,1) 实数(rand() 时代做不到的均匀实数) ----
     std::uniform_real_distribution<double> unit(0.0, 1.0);
     std::cout << std::fixed << std::setprecision(3);
-    std::cout << "3 个 [0,1) 随机数: ";
+    std::cout << "3 个 [0,1) 随机数: ";   // 输出(示例, 每次运行数值不同): 3 个 [0,1) 随机数: 0.970 0.045 0.940
     for (int i = 0; i < 3; ++i)
-        std::cout << unit(gen) << ' ';
+        std::cout << unit(gen) << ' ';   // 输出: 每个实数 + 空格(setprecision(3) 固定 3 位小数)
     std::cout << '\n';
 
     // ---- 3. 正态分布: 均值 500、标准差 30 的"测量噪声" ----
     std::normal_distribution<double> noise(500.0, 30.0);
-    std::cout << "5 个正态噪声: ";
+    std::cout << "5 个正态噪声: ";   // 输出(示例, 每次运行数值不同): 5 个正态噪声: 534.286 526.805 523.748 445.626 496.224
     for (int i = 0; i < 5; ++i)
-        std::cout << noise(gen) << ' ';
+        std::cout << noise(gen) << ' ';   // 输出: 每个噪声值 + 空格(拼成上一行)
     std::cout << '\n';
 
     // ---- 4. 洗牌: std::shuffle(替代已移除的 std::random_shuffle) ----
@@ -51,17 +51,17 @@ int main()
     for (int i = 0; i < 13; ++i)
         deck[i] = i + 1;
     std::shuffle(deck.begin(), deck.end(), gen);
-    std::cout << "洗过的 1~13: ";
+    std::cout << "洗过的 1~13: ";   // 输出(示例, 每次运行数值不同): 洗过的 1~13: 4 13 12 5 2 8 1 11 6 10 3 7 9
     for (int v : deck)
-        std::cout << v << ' ';
+        std::cout << v << ' ';   // 输出: 每张牌 + 空格(拼成上一行)
     std::cout << '\n';
 
     // ---- 5. 可复现性: 固定种子 -> 每次同样的序列(测试/对拍神器) ----
     std::mt19937 fixed(42);                      // 同种子同序列, C++98 做不到
     std::uniform_int_distribution<int> d(1, 100);
-    std::cout << "固定种子 42 的前 3 个: ";
+    std::cout << "固定种子 42 的前 3 个: ";   // 输出: 固定种子 42 的前 3 个: 38 80 96 (每次重跑本程序数值不变)
     for (int i = 0; i < 3; ++i)
-        std::cout << d(fixed) << ' ';
-    std::cout << "(每次重跑本程序数值不变)\n";
+        std::cout << d(fixed) << ' ';   // 输出: 每个随机数 + 空格(拼成上一行)
+    std::cout << "(每次重跑本程序数值不变)\n";   // 输出: (每次重跑本程序数值不变)
     return 0;
 }

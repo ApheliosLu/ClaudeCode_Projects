@@ -23,11 +23,11 @@
 struct Widget {
     explicit Widget(const std::string& s) : text(s)
     {
-        std::cout << "Widget(const string&) —— 拷贝路径\n";
+        std::cout << "Widget(const string&) —— 拷贝路径\n"; // 输出: Widget(const string&) —— 拷贝路径
     }
     explicit Widget(std::string&& s) : text(std::move(s))
     {
-        std::cout << "Widget(string&&) —— 移动路径\n";
+        std::cout << "Widget(string&&) —— 移动路径\n"; // 输出: Widget(string&&) —— 移动路径
     }
     std::string text;
 };
@@ -40,6 +40,7 @@ void forward_to_widget(T&& arg)      // T&& : 转发引用
     // 实参是右值时 T = std::string   -> forward 还原为右值 -> 移动路径。
     Widget w(std::forward<T>(arg));
     std::cout << "   -> 构造出 Widget, text = \"" << w.text << "\"\n";
+        // 输出: 行首 3 个空格 + -> 构造出 Widget, text = "<w.text>"
 }
 
 // 工业级典型用途: 手搓的"转发工厂"(参数个数任意, 见 08 变参模板)
@@ -54,9 +55,15 @@ int main()
 {
     std::string left = "left value";
     forward_to_widget(left);        // 左值 -> T = std::string&   -> 拷贝路径
+    // 输出:
+    //   Widget(const string&) —— 拷贝路径
+    //      -> 构造出 Widget, text = "left value"
     forward_to_widget(std::string("right value"));  // 右值 -> T = std::string -> 移动路径
+    // 输出:
+    //   Widget(string&&) —— 移动路径
+    //      -> 构造出 Widget, text = "right value"
 
-    auto u = my_make_unique<Widget>(std::string("via my_make_unique"));
-    std::cout << "工厂产物: " << u->text << '\n';
+    auto u = my_make_unique<Widget>(std::string("via my_make_unique")); // 输出: Widget(string&&) —— 移动路径
+    std::cout << "工厂产物: " << u->text << '\n'; // 输出: 工厂产物: via my_make_unique
     return 0;
 }

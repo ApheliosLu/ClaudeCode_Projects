@@ -38,7 +38,7 @@ int main()
     //        而且 budget 传不进去(bind2nd 那种写法又丑又脆)
     auto affordable = std::count_if(cart.begin(), cart.end(),
                                     [&](const Item& i) { return i.price <= budget; });
-    std::cout << "预算内的商品数: " << affordable << '\n';
+    std::cout << "预算内的商品数: " << affordable << '\n'; // 输出: 预算内的商品数: 3
 
     // ---- 就地定义排序规则(替代手写排序函数/比较器类) ----
     std::sort(cart.begin(), cart.end(),
@@ -48,20 +48,20 @@ int main()
     auto it = std::find_if(cart.begin(), cart.end(),
                            [](const Item& i) { return i.price >= 20.0; });
     if (it != cart.end())
-        std::cout << "排序后第一个 >=20 元的: " << it->name << '\n';
+        std::cout << "排序后第一个 >=20 元的: " << it->name << '\n'; // 输出: 排序后第一个 >=20 元的: book
 
     std::cout << "最贵: " << cart.back().name << " = "
-              << cart.back().price << '\n';
+              << cart.back().price << '\n'; // 输出: 最贵: cherry = 30
 
     // ---- mutable: 值捕获的"副本"内部可改, 不影响外部变量 ----
     int counter = 0;
     auto bump = [counter]() mutable { return ++counter; };
     std::cout << "bump() = " << bump()
-              << "   外部 counter 仍是 " << counter << '\n';
+              << "   外部 counter 仍是 " << counter << '\n'; // 输出: bump() = 1   外部 counter 仍是 0
 
     // ---- 存进 std::function: 类型擦除, 可以到处传递(有少量开销) ----
     std::function<int(int, int)> add = [](int a, int b) { return a + b; };
-    std::cout << "std::function add(2,3) = " << add(2, 3) << '\n';
+    std::cout << "std::function add(2,3) = " << add(2, 3) << '\n'; // 输出: std::function add(2,3) = 5
 
     // ---- C++98 的"手写循环累加"可以换成 accumulate(仍有意义) ----
     // C++98: double over = 0; for (it = cart.begin(); ...) if (it->price > budget) over += it->price;
@@ -69,6 +69,6 @@ int main()
     for (const auto& item : cart)
         if (item.price > budget)
             over += item.price;     // 范围 for + if 直观清晰, 保留也没问题
-    std::cout << "超预算商品总价: " << over << '\n';
+    std::cout << "超预算商品总价: " << over << '\n'; // 输出: 超预算商品总价: 52
     return 0;
 }

@@ -33,26 +33,26 @@ int main()
     // C++98 等价写法(请勿再手写):
     //   for (std::vector<int>::const_iterator it = v.begin(); it != v.end(); ++it)
     //       std::cout << *it << ' ';
-    std::cout << "只读遍历: ";
+    std::cout << "只读遍历: "; // 输出: 只读遍历: 1 2 3（本行 + 下两行循环拼成一行）
     for (const auto& n : v)
-        std::cout << n << ' ';
+        std::cout << n << ' '; // 输出: 1 2 3（每个元素后跟一个空格）
     std::cout << '\n';
 
     // ---- 3. 就地修改: auto& ----
     for (auto& n : v)
         n *= 10;
-    std::cout << "乘以 10 后: ";
+    std::cout << "乘以 10 后: "; // 输出: 乘以 10 后: 10 20 30（本行 + 下两行循环拼成一行）
     for (const auto& n : v)
-        std::cout << n << ' ';
+        std::cout << n << ' '; // 输出: 10 20 30（每个元素后跟一个空格）
     std::cout << '\n';
 
     // ---- 4. 遍历 map: 元素类型是 std::pair<const Key, Value> ----
     for (const auto& kv : scores)
-        std::cout << kv.first << "=" << kv.second << '\n';
+        std::cout << kv.first << "=" << kv.second << '\n'; // 输出: alice=90 | bob=85（map 按 key 升序, 分两行）
 
     // ---- 5. 裸数组也支持范围 for(编译器退化为指针遍历) ----
     for (auto n : arr)
-        std::cout << n;
-    std::cout << " <- 数组元素\n";
+        std::cout << n; // 输出: 123（三个元素直接相连, 无分隔符）
+    std::cout << " <- 数组元素\n"; // 输出: " <- 数组元素"（行首一个空格, 与上面的 123 拼成一行）
     return 0;
 }

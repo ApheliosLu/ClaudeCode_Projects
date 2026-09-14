@@ -59,19 +59,23 @@ int main()
     std::cout << "pair: (" << p.first << ", " << p.second << ")\n"
               << "vector.size = " << v.size() << ", array.size = "
               << a.size() << ", optional = " << *o << '\n';
+    // 输出:
+    //   pair: (name, 1)
+    //   vector.size = 3, array.size = 3, optional = 42
 
     // ---- 2. 自定义类型直接推导 ----
     Box b(10);                           // C++11: Box<int> b(10);
-    std::cout << "Box::value = " << b.value() << '\n';
+    std::cout << "Box::value = " << b.value() << '\n';  // 输出: Box::value = 10
 
     // ---- 3. 聚合 + 自定义推导指引 ----
     DictEntry e{"age", 30};              // 无指引时聚合无法推导, 加上即可
-    std::cout << "DictEntry: " << e.key << " -> " << e.value << '\n';
+    std::cout << "DictEntry: " << e.key << " -> " << e.value << '\n';  // 输出: DictEntry: age -> 30
 
     // ---- 4. inline 变量 ----
-    std::cout << "verbosity = " << AppConfig::verbosity << '\n';
+    std::cout << "verbosity = " << AppConfig::verbosity << '\n';  // 输出: verbosity = 2
     AppConfig::verbosity = 3;            // 可变; 换头文件改一处即可
     std::cout << "改后 verbosity = " << AppConfig::verbosity
               << ", version = " << AppConfig::version << '\n';
+    // 输出: 改后 verbosity = 3, version = 1.0
     return 0;
 }

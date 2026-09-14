@@ -1,0 +1,121 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "C++: 编译并运行当前文件",
+            "detail": "★ Ctrl+Shift+B —— 先编译, 成功后运行, 一条命令到底",
+            "type": "shell",
+            "command": "chcp 65001 >nul & ${fileDirname}/${fileBasenameNoExtension}.exe",
+            "dependsOn": "C++: 只编译不运行",
+            "dependsOrder": "sequence",
+            "problemMatcher": [],
+            "options": {
+                "shell": {
+                    "executable": "cmd.exe",
+                    "args": [
+                        "/d",
+                        "/c"
+                    ]
+                }
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": false
+            }
+        },
+        {
+            "label": "C++: 只编译不运行",
+            "detail": "g++ -std=<下拉选的标准> -Wall -Wextra -O1 -g -pthread -static 当前.cpp -> 同名.exe",
+            "type": "shell",
+            "command": "D:/mingw64/bin/g++.exe",
+            "args": [
+                "-std=${input:cppStd}",
+                "-Wall",
+                "-Wextra",
+                "-O1",
+                "-g",
+                "-pthread",
+                "-static",
+                "${file}",
+                "-o",
+                "${fileDirname}/${fileBasenameNoExtension}.exe",
+                "-lstdc++exp"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        },
+        {
+            "label": "C++: 只运行 (不重新编译)",
+            "detail": "直接跑上次编译出来的 exe, 改了代码别用这个",
+            "type": "shell",
+            "command": "chcp 65001 >nul & ${fileDirname}/${fileBasenameNoExtension}.exe",
+            "problemMatcher": [],
+            "options": {
+                "shell": {
+                    "executable": "cmd.exe",
+                    "args": [
+                        "/d",
+                        "/c"
+                    ]
+                }
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        },
+        {
+            "type": "cppbuild",
+            "label": "C/C++: g++.exe 生成活动文件",
+            "command": "D:\\mingw64\\bin\\g++.exe",
+            "args": [
+                "-fdiagnostics-color=always",
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "detail": "C/C++ 扩展自动生成的编译任务。本项目不用它：它没带 -std= 和 -static，编 cpp17+ 会失败、编出来也跑不起来。保留是为了让扩展别再重复生成，isDefault 已关掉，Ctrl+Shift+B 不会再走到它。"
+        }
+    ],
+    "inputs": [
+        {
+            "id": "cppStd",
+            "type": "pickString",
+            "description": "选这个文件对应的 C++ 标准 (看它所在目录: cpp11 -> c++11, cpp23 -> c++23)",
+            "options": [
+                "c++11",
+                "c++14",
+                "c++17",
+                "c++20",
+                "c++23"
+            ],
+            "default": "c++11"
+        }
+    ]
+}

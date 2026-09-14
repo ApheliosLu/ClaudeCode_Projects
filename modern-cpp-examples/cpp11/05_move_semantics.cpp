@@ -32,14 +32,14 @@ public:
     explicit Buffer(std::size_t n)
         : size_(n), data_(n ? new char[n] : nullptr)
     {
-        std::cout << "构造(分配 " << n << " 字节)\n";
+        std::cout << "构造(分配 " << n << " 字节)\n"; // 输出: 构造(分配 <n> 字节), 如 构造(分配 4 字节)
     }
 
     // 拷贝构造: 深拷贝 —— 昂贵
     Buffer(const Buffer& other)
         : size_(other.size_), data_(other.size_ ? new char[other.size_] : nullptr)
     {
-        std::cout << "拷贝构造(整块深拷贝)\n";
+        std::cout << "拷贝构造(整块深拷贝)\n"; // 输出: 拷贝构造(整块深拷贝)
         std::copy(other.data_, other.data_ + other.size_, data_);
     }
 
@@ -52,12 +52,12 @@ public:
     {
         other.size_ = 0;
         other.data_ = nullptr;          // 源对象置空, 防止双重释放
-        std::cout << "移动构造(只偷指针)\n";
+        std::cout << "移动构造(只偷指针)\n"; // 输出: 移动构造(只偷指针)
     }
 
     Buffer& operator=(const Buffer& other)
     {
-        std::cout << "拷贝赋值\n";
+        std::cout << "拷贝赋值\n"; // 输出: 拷贝赋值（本程序未走到）
         if (this != &other) {
             delete[] data_;
             size_ = other.size_;
@@ -69,7 +69,7 @@ public:
 
     Buffer& operator=(Buffer&& other) noexcept
     {
-        std::cout << "移动赋值\n";
+        std::cout << "移动赋值\n"; // 输出: 移动赋值（本程序未走到）
         if (this != &other) {
             delete[] data_;             // 释放自己旧资源
             size_ = other.size_;
@@ -83,7 +83,7 @@ public:
     ~Buffer()
     {
         delete[] data_;
-        std::cout << "析构\n";
+        std::cout << "析构\n"; // 输出: 析构
     }
 
 private:
@@ -104,7 +104,7 @@ Buffer makeBuffer(std::size_t n)
 class Greeter {
 public:
     explicit Greeter(std::string name) : name_(std::move(name)) {}
-    void greet() const { std::cout << "Hello, " << name_ << '\n'; }
+    void greet() const { std::cout << "Hello, " << name_ << '\n'; } // 输出: Hello, <name_>, 如 Hello, world
 private:
     std::string name_;
 };
@@ -116,20 +116,27 @@ int main()
     v.reserve(2);
 
     std::cout << "-- 1. 右值(临时对象): 只走移动, 不走深拷贝 --\n";
+    // 输出: -- 1. 右值(临时对象): 只走移动, 不走深拷贝 --
     v.push_back(makeBuffer(4));     // 可能被省略成直接构造; 但绝不会深拷贝
+    // 输出: 构造(分配 4 字节) | 移动构造(只偷指针) | 析构
 
     std::cout << "-- 2. 具名变量是左值: 默认拷贝; std::move 后走移动 --\n";
-    Buffer buf(8);
-    v.push_back(buf);               // 左值 -> 拷贝构造(深拷贝)
+    // 输出: -- 2. 具名变量是左值: 默认拷贝; std::move 后走移动 --
+    Buffer buf(8); // 输出: 构造(分配 8 字节)
+    v.push_back(buf);               // 左值 -> 拷贝构造(深拷贝)  输出: 拷贝构造(整块深拷贝)
     v.push_back(std::move(buf));    // std::move -> 移动构造; 之后不要再碰 buf!
+    // 输出: 移动构造(只偷指针) | 移动构造(只偷指针) | 析构 | 移动构造(只偷指针) | 析构
     std::cout << "(第 3 次 push 触发扩容, 旧元素被移动而非深拷贝)\n";
+    // 输出: (第 3 次 push 触发扩容, 旧元素被移动而非深拷贝)
 
     std::cout << "-- 3. sink 惯用法 + 按值返回 --\n";
+    // 输出: -- 3. sink 惯用法 + 按值返回 --
     Greeter g1("world");                              // 字符串被拷贝一次
     Greeter g2(std::string("rvalue str"));            // 直接移动, 零拷贝
-    g1.greet();
-    g2.greet();
+    g1.greet(); // 输出: Hello, world
+    g2.greet(); // 输出: Hello, rvalue str
 
     std::cout << "-- 程序结束, 容器元素依次析构 --\n";
-    return 0;
+    // 输出: -- 程序结束, 容器元素依次析构 --
+    return 0; // 输出: 析构 | 析构 | 析构 | 析构（buf 与容器内 3 个元素在 main 结束时依次析构）
 }

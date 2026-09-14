@@ -45,18 +45,18 @@ int main()
         .and_then([](int v) { return checked_div(v, 3); })  // 8
         .transform([](int v) { return v + 100; });          // 108
     std::cout << "链路结果 = " << result.value_or(-1)
-              << " (期望 108)\n";
+              << " (期望 108)\n";  // 输出: 链路结果 = 108 (期望 108)
 
     // ---- 中间某步失败: 整条链短路, or_else 兜底 ----
     auto fallback = parse_int("24")
         .and_then([](int) { return checked_div(1, 0); })    // 除 0 -> 空
         .or_else([] {
-            std::cout << "  [日志] 除 0 了, 用默认值顶替\n";
+            std::cout << "  [日志] 除 0 了, 用默认值顶替\n";  // 输出:   [日志] 除 0 了, 用默认值顶替
             return std::optional<int>{42};                  // 注入默认
         })
         .transform([](int v) { return v * 2; });            // 84
     std::cout << "兜底后结果 = " << fallback.value_or(-1)
-              << " (期望 84)\n";
+              << " (期望 84)\n";  // 输出: 兜底后结果 = 84 (期望 84)
 
     // ---- 对比: C++17 时代同样的逻辑要写多少层 if ----
     // (注释展示, 读者自行感受)

@@ -23,23 +23,24 @@ int main()
     std::cout << add(1, 2) << ' '
               << add(1.5, 2.5) << ' '
               << add(std::string("ab"), std::string("cd")) << '\n';  // int / double / string
+    // 输出: 3 4 abcd
 
     // 同一套"打印容器"逻辑, 容器元素类型随便换
     auto print_vec = [](const auto& v) {
         for (const auto& x : v)
-            std::cout << x << ' ';
+            std::cout << x << ' ';  // 输出: 元素后跟一个空格
         std::cout << '\n';
     };
     std::vector<int>    vi{3, 1, 2};
     std::vector<double> vd{2.5, 0.5, 1.5};
-    print_vec(vi);
-    print_vec(vd);
+    print_vec(vi);  // 输出: 3 1 2
+    print_vec(vd);  // 输出: 2.5 0.5 1.5
 
     // ---- 2. 初始化捕获: 把"移动过来的对象"关进 lambda ----
     // 经典场景: 大对象 + 只在线程/回调里用一次 —— 拷贝毫无必要
     std::string big = "hello, I am an expensive buffer";
     auto reader = [s = std::move(big)] { return s.size(); };
-    std::cout << "captured size = " << reader() << '\n';
+    std::cout << "captured size = " << reader() << '\n';  // 输出: captured size = 31
     // 注意: big 已被搬走, 处于"合法但未指定"状态, 之后不要再使用它
 
     // ---- 3. auto&& 参数: 泛型 lambda 内部做完美转发 ----
@@ -49,5 +50,6 @@ int main()
     };
     auto twice = [](auto x) { return x * 2; };
     std::cout << "invoke(twice, 21) = " << invoke(twice, 21) << '\n';
+    // 输出: invoke(twice, 21) = 42
     return 0;
 }

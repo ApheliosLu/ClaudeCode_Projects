@@ -24,22 +24,25 @@ int main()
 
     // ---- 1. 并排读取(结构化绑定直接解出引用) ----
     // C++17 写法: for (size_t i = 0; i < names.size(); ++i) ...
-    std::cout << "成绩单:\n";
+    std::cout << "成绩单:\n";  // 输出: 成绩单:
     for (auto&& [name, score] : std::views::zip(names, scores))
-        std::cout << "  " << name << ": " << score << '\n';
+        std::cout << "  " << name << ": " << score << '\n';  // 输出(循环 3 行, 行首 2 空格):
+                                                             //   alice: 90
+                                                             //   bob: 85
+                                                             //   carol: 88
 
     // ---- 2. 并排写: 元素是"引用", 直接改原容器 ----
     for (auto&& [name, score] : std::views::zip(names, scores))
         if (name == "bob")
             score += 5;                          // bob 加分, 原 vector 被改
-    std::cout << "bob 加分后 scores[1] = " << scores[1] << '\n';
+    std::cout << "bob 加分后 scores[1] = " << scores[1] << '\n';  // 输出: bob 加分后 scores[1] = 90
 
     // ---- 3. 长度不等: 自动停在最短处 ----
     std::vector<int> a{1, 2, 3, 4, 5};
     std::vector<int> b{10, 20, 30};
-    std::cout << "zip(a, b)(短者为准): ";
+    std::cout << "zip(a, b)(短者为准): ";  // 输出: zip(a, b)(短者为准): 11 22 33
     for (auto&& [x, y] : std::views::zip(a, b))
-        std::cout << x + y << ' ';               // 11 22 33
+        std::cout << x + y << ' ';               // 11 22 33  // 输出: 11 22 33
     std::cout << '\n';
 
     // ---- 4. 与 transform 组合: 对应元素做运算生成新序列 ----
@@ -47,9 +50,9 @@ int main()
               | std::views::transform([](auto&& pair) {
                     return std::get<0>(pair) + std::get<1>(pair);
                 });
-    std::cout << "zip->transform 的和: ";
+    std::cout << "zip->transform 的和: ";  // 输出: zip->transform 的和: 11 22 33
     for (int s : sums)
-        std::cout << s << ' ';
+        std::cout << s << ' ';                   // 输出: 11 22 33
     std::cout << '\n';
     return 0;
 }

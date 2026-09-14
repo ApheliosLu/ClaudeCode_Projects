@@ -22,14 +22,14 @@
 // ---- 递归终点: 空包时调用这个重载, 结束递归 ----
 void print_all()
 {
-    std::cout << "(print_all 结束)\n";
+    std::cout << "(print_all 结束)\n";   // 输出: (print_all 结束)
 }
 
 // ---- 递归步: 处理第一个实参, 其余打包继续递归 ----
 template <typename First, typename... Rest>
 void print_all(const First& first, const Rest&... rest)
 {
-    std::cout << first << ' ';
+    std::cout << first << ' ';   // 输出: 当前实参 + 空格(递归逐个打印, 拼成一行)
     print_all(rest...);
 }
 
@@ -59,12 +59,12 @@ std::shared_ptr<T> build(Args&&... args)
 int main()
 {
     // 一个函数打印任意多个、任意类型的实参 —— 类型安全(printf 做不到)
-    print_all(1, 2.5, "three", std::string("four"), '5');
+    print_all(1, 2.5, "three", std::string("four"), '5');   // 输出: 1 2.5 three four 5 (print_all 结束)
 
-    std::cout << "count_args(1, 2, 3) = " << count_args(1, 2, 3) << '\n';
-    std::cout << "count_args()       = " << count_args() << '\n';
+    std::cout << "count_args(1, 2, 3) = " << count_args(1, 2, 3) << '\n';   // 输出: count_args(1, 2, 3) = 3
+    std::cout << "count_args()       = " << count_args() << '\n';   // 输出: count_args()       = 0
 
     auto p = build<Point>(3, 4);     // make_shared<Point>(3, 4)
-    std::cout << "build<Point>(3,4) -> (" << p->x << ", " << p->y << ")\n";
+    std::cout << "build<Point>(3,4) -> (" << p->x << ", " << p->y << ")\n";   // 输出: build<Point>(3,4) -> (3, 4)
     return 0;
 }

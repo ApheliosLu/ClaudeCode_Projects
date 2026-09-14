@@ -54,7 +54,7 @@ public:
 };
 class Circle : public Shape {
 public:
-    void draw() const override { std::cout << "画一个圆\n"; }
+    void draw() const override { std::cout << "画一个圆\n"; }   // 输出: 画一个圆
 };
 
 int main()
@@ -66,20 +66,20 @@ int main()
     Order copy = o;               // 编译器生成的拷贝构造
     copy.add(30);
     std::cout << "原单件数 " << o.count()
-              << ", 副本件数 " << copy.count() << " (深拷贝)\n";
+              << ", 副本件数 " << copy.count() << " (深拷贝)\n";   // 输出: 原单件数 2, 副本件数 3 (深拷贝)
 
     // Order 移动 = 高效搬移(C++11 才有; C++98 只能拷贝)
     Order moved(std::move(o));
-    std::cout << "moved 件数 " << moved.count() << " (搬走后不要再碰 o)\n";
+    std::cout << "moved 件数 " << moved.count() << " (搬走后不要再碰 o)\n";   // 输出: moved 件数 2 (搬走后不要再碰 o)
 
     // Task 只能移动, 不能拷贝
     Task t1(7);
     Task t2(std::move(t1));
-    std::cout << "t2.value() = " << t2.value() << '\n';
+    std::cout << "t2.value() = " << t2.value() << '\n';   // 输出: t2.value() = 7
     // Task t3 = t1;    // 编译错误: 拷贝被 =delete —— 编译器替你拦住
 
     // 多态 + 智能指针 + 虚析构: 释放路径完全正确
     std::unique_ptr<Shape> s(new Circle);
-    s->draw();
+    s->draw();   // 输出: 画一个圆
     return 0;
 }

@@ -46,18 +46,18 @@ int main()
     std::chrono::seconds      five_s(5);
     std::chrono::milliseconds half_s(500);
     auto total = five_s + half_s;            // 不同单位相加: 编译期自动换算
-    std::cout << "5 秒 + 500 毫秒 = " << total.count() << " 毫秒\n";   // 5500
+    std::cout << "5 秒 + 500 毫秒 = " << total.count() << " 毫秒\n";   // 5500  输出: 5 秒 + 500 毫秒 = 5500 毫秒
 
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(five_s);
-    std::cout << "5 秒 = " << ms.count() << " 毫秒\n";
+    std::cout << "5 秒 = " << ms.count() << " 毫秒\n";   // 输出: 5 秒 = 5000 毫秒
 
     // ---- 2. 测耗时: steady_clock(单调钟, 不受改系统时间影响) ----
-    std::cout << "busy_work 约耗时 " << time_ms(busy_work) << " ms\n";
+    std::cout << "busy_work 约耗时 " << time_ms(busy_work) << " ms\n";   // 输出(示例, 每次运行数值不同): busy_work 约耗时 10 ms
 
     // ---- 3. 挂钟时间 system_clock: 给人看的年月日时分秒 ----
     auto now = std::chrono::system_clock::now();
     std::time_t t = std::chrono::system_clock::to_time_t(now);
-    std::cout << "当前挂钟时间: " << std::ctime(&t);    // ctime 自带换行
+    std::cout << "当前挂钟时间: " << std::ctime(&t);    // ctime 自带换行  输出(示例, 每次运行数值不同): 当前挂钟时间: Sat Sep 12 15:41:38 2026
 
     // ---- 4. 线程睡眠: sleep_for(粒度由平台决定, 自动换算) ----
     auto t0 = std::chrono::steady_clock::now();
@@ -66,6 +66,6 @@ int main()
     std::cout << "sleep_for(20ms) 实际睡了 "
               << std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0)
                      .count()
-              << " 微秒\n";
+              << " 微秒\n";   // 输出(示例, 每次运行数值不同): sleep_for(20ms) 实际睡了 33899 微秒
     return 0;
 }

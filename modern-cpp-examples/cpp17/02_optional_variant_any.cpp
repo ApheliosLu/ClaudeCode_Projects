@@ -36,15 +36,16 @@ int main()
     // ---------- 1. std::optional ----------
     // 查询数据库/解析配置的经典模式:
     if (auto r = safe_div(10.0, 4.0); r) {          // r 可当 bool 用
-        std::cout << "10/4 = " << *r << '\n';       // *r 解引用取值
+        std::cout << "10/4 = " << *r << '\n';       // *r 解引用取值  // 输出: 10/4 = 2.5
     }
     auto bad = safe_div(10.0, 0.0);
     std::cout << "除 0 是否有值: " << bad.has_value()
               << ", 用 value_or 兜底 = " << bad.value_or(-1.0) << '\n';
+    // 输出: 除 0 是否有值: 0, 用 value_or 兜底 = -1
 
     // 容器里放 optional: 稀疏表
     std::optional<int> maybe;                       // 默认无值
-    std::cout << "maybe = " << maybe.value_or(0) << '\n';
+    std::cout << "maybe = " << maybe.value_or(0) << '\n';  // 输出: maybe = 0
 
     // ---------- 2. std::variant(带标签联合体) ----------
     // C++98 union 不能放 std::string(非平凡析构), 也追不上当前类型;
@@ -55,22 +56,23 @@ int main()
     Config c2 = std::string("hi");  // 现在是 string
 
     // 运行时类型安全的"按类型分发": std::visit(统一处理)
-    std::cout << "c1 打印: ";
+    std::cout << "c1 打印: ";  // 输出: c1 打印: (本行不换行, 与下面 std::visit 的输出拼成一行)
     std::visit([](const auto& x) {
         using T = std::decay_t<decltype(x)>;        // 分支判断
         if constexpr (std::is_same_v<T, int>)       // if constexpr: 编译期裁掉其它分支
-            std::cout << "(int) " << x;
+            std::cout << "(int) " << x;  // 输出: (int) 42
         else if constexpr (std::is_same_v<T, double>)
-            std::cout << "(double) " << x;
+            std::cout << "(double) " << x;  // 输出: (double) 值(本程序未走到, c1 是 int)
         else
-            std::cout << "(string) " << x;
+            std::cout << "(string) " << x;  // 输出: (string) 值(本程序未走到, c1 是 int)
     }, c1);
     std::cout << '\n';
 
     // 有把握时直接 get / get_if(取错类型会抛 bad_variant_access 或返回空指针)
     if (auto p = std::get_if<std::string>(&c2))
-        std::cout << "c2 里是字符串: " << *p << '\n';
+        std::cout << "c2 里是字符串: " << *p << '\n';  // 输出: c2 里是字符串: hi
     std::cout << "c2 当前类型索引: " << c2.index() << " (2=string)\n";
+    // 输出: c2 当前类型索引: 2 (2=string)
 
     // ---------- 3. std::any(任意类型单值, 运行时擦除) ----------
     std::any anything = 42;                          // 存 int
@@ -79,13 +81,14 @@ int main()
 
     // 安全取法: any_cast<T>(&a) 返回指针, 类型不对是 nullptr —— 不抛异常
     if (auto d = std::any_cast<double>(&anything))
-        std::cout << "anything 里是 double: " << *d << '\n';
+        std::cout << "anything 里是 double: " << *d << '\n';  // 输出: anything 里是 double: 3.14
     // 类型不对时按值 any_cast 会抛 bad_any_cast —— 演示一下再兜住
     try {
         int v = std::any_cast<int>(anything);        // 实际是 double, 抛异常
         (void)v;
     } catch (const std::bad_any_cast&) {
         std::cout << "any_cast<int> 失败(类型不匹配), 异常被捕获\n";
+        // 输出: any_cast<int> 失败(类型不匹配), 异常被捕获
     }
     return 0;
 }

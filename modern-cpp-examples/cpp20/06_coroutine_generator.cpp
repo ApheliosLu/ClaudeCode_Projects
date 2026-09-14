@@ -102,15 +102,15 @@ Generator<unsigned long long> fibonacci()        // 无穷序列: 想要多少�
 
 int main()
 {
-    std::cout << "naturals_to(5): ";
+    std::cout << "naturals_to(5): ";  // 输出: naturals_to(5):
     for (int v : naturals_to(5))
-        std::cout << v << ' ';
+        std::cout << v << ' ';  // 输出: 1 2 3 4 5
     std::cout << '\n';
 
-    std::cout << "fibonacci 前 12 个: ";
+    std::cout << "fibonacci 前 12 个: ";  // 输出: fibonacci 前 12 个:
     int count = 0;
     for (auto v : fibonacci()) {
-        std::cout << v << ' ';
+        std::cout << v << ' ';  // 输出: 1 1 2 3 5 8 13 21 34 55 89 144
         if (++count == 12) break;
     }
     std::cout << '\n';

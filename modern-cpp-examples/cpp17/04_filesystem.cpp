@@ -31,6 +31,7 @@ int main()
     fs::create_directories(demo_dir, ec);          // 多级目录一次建好
     if (ec) {
         std::cout << "创建目录失败: " << ec.message() << '\n';
+        // 输出: 创建目录失败: <错误原因>(本程序未走到, 临时目录可正常创建)
         return 1;
     }
 
@@ -41,26 +42,35 @@ int main()
 
     // ---- 遍历目录(不再写平台专属循环) ----
     std::cout << "目录内容(" << demo_dir.string() << "):\n";
+    // 输出: 目录内容(C:\Users\q1209\AppData\Local\Temp\cpp17_fs_demo):
     for (const fs::directory_entry& e : fs::directory_iterator(demo_dir))
         std::cout << "  " << e.path().filename().string()
-                  << "  (" << e.file_size() << " B)\n";
+                  << "  (" << e.file_size() << " B)\n";  // 输出: 每个文件一行(名称 + 字节数)
+    // 输出:
+    //   data.csv  (7 B)
+    //   report.txt  (23 B)
 
     // ---- 查询属性 ----
     std::cout << "report.txt: exists = " << fs::exists(report)
               << ", 是普通文件 = " << fs::is_regular_file(report)
               << ", 大小 = " << fs::file_size(report) << " B\n";
+    // 输出: report.txt: exists = 1, 是普通文件 = 1, 大小 = 23 B
     std::cout << "  扩展名 = " << report.extension().string()
               << " | 主名 = " << report.stem().string()
               << " | 父目录 = " << report.parent_path().string() << '\n';
+    // 输出:
+    //   扩展名 = .txt | 主名 = report | 父目录 = C:\Users\q1209\AppData\Local\Temp\cpp17_fs_demo
 
     // ---- 修改时间(与"文件时钟"求差, 得到相对时间) ----
     auto ft    = fs::last_write_time(report);
     auto delta = std::chrono::duration_cast<std::chrono::seconds>(
                      fs::file_time_type::clock::now() - ft).count();
     std::cout << "距上次写入约 " << delta << " 秒\n";
+    // 输出(示例, 每次运行数值不同): 距上次写入约 0 秒
 
     // ---- 收尾: 清理自己创建的演示目录 ----
     fs::remove_all(demo_dir, ec);
     std::cout << "演示目录已清理: " << demo_dir.string() << '\n';
+    // 输出: 演示目录已清理: C:\Users\q1209\AppData\Local\Temp\cpp17_fs_demo
     return 0;
 }

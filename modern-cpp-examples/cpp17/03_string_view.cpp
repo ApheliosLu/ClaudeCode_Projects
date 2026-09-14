@@ -35,19 +35,19 @@ int main()
     std::string  str = "hello 42 world";
     std::string_view v1 = lit;          // 只记录指针和长度
     std::string_view v2 = str;          // 不复制 str 内容
-    std::cout << "lit 中数字个数: " << count_digits(v1) << '\n';
-    std::cout << "str 中数字个数: " << count_digits(v2) << '\n';
+    std::cout << "lit 中数字个数: " << count_digits(v1) << '\n';  // 输出: lit 中数字个数: 3
+    std::cout << "str 中数字个数: " << count_digits(v2) << '\n';  // 输出: str 中数字个数: 2
 
     // ---- 2. 切片 O(1) 不拷贝(对比: string::substr 返回全新 string) ----
     std::string_view full = lit;        // abc123xyz
     std::string_view head = full.substr(0, 3);    // "abc" —— 仍是视图
-    std::cout << "前 3 个字符: [" << head << "]\n";
+    std::cout << "前 3 个字符: [" << head << "]\n";  // 输出: 前 3 个字符: [abc]
 
     // ---- 3. 解析场景: remove_prefix 移动"起点", 全程零分配 ----
     std::string_view url = "https://example.com/page";
     url.remove_prefix(8);                          // 去掉 "https://"
     std::string_view host = url.substr(0, url.find('/'));
-    std::cout << "host = " << host << '\n';
+    std::cout << "host = " << host << '\n';  // 输出: host = example.com
 
     // ---- 4. 把"只要前缀/后缀"的检查写成视图, 不再复制 ----
     std::string_view filename = "report.tar.gz";
@@ -55,7 +55,7 @@ int main()
     bool ok = filename.substr(0, 6) == "report" && filename.size() >= 3 &&
               filename.substr(filename.size() - 3) == ".gz";
     std::cout << "文件名以 report 开头且以 .gz 结尾: "
-              << (ok ? "是" : "否") << '\n';
+              << (ok ? "是" : "否") << '\n';  // 输出: 文件名以 report 开头且以 .gz 结尾: 是
 
     // ---- 5. 悬垂警告(只注释不执行, 看了记住) ----
     // std::string_view dangling = std::string("temp").substr(0, 2);

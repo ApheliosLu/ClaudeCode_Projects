@@ -46,29 +46,29 @@ int main()
 
     // <=> 结果可直接与 0 比较: <0 小于 / ==0 相等 / >0 大于
     auto rel = alice <=> bob;
-    if (rel < 0)  std::cout << "alice < bob (按 name)\n";
-    if (rel != 0) std::cout << "两者不相等\n";
+    if (rel < 0)  std::cout << "alice < bob (按 name)\n";  // 输出: alice < bob (按 name)
+    if (rel != 0) std::cout << "两者不相等\n";  // 输出: 两者不相等
 
     // 直接进 set 当键 / 直接 sort(只需 <, 由 <=> 自动改写提供)
     std::set<Player> ranking{{"bob", 5000}, {"alice", 3000}, {"bob", 3000}};
-    std::cout << "set 自动排序(先 name 后 score): ";
+    std::cout << "set 自动排序(先 name 后 score): ";  // 输出: set 自动排序(先 name 后 score):
     for (const auto& p : ranking)
-        std::cout << p.name << ':' << p.score << ' ';
+        std::cout << p.name << ':' << p.score << ' ';  // 输出: alice:3000 bob:3000 bob:5000
     std::cout << '\n';
 
     std::vector<Player> ps{{"carol", 1000}, {"alice", 9000}, {"bob", 2000}};
     std::sort(ps.begin(), ps.end());                     // 只需要 <
-    std::cout << "sort 后: ";
+    std::cout << "sort 后: ";  // 输出: sort 后:
     for (const auto& p : ps)
-        std::cout << p.name << ' ';
+        std::cout << p.name << ' ';  // 输出: alice bob carol
     std::cout << '\n';
 
     // 自定义次序: 只按分数
     std::vector<RankOnly> rs{{"carol", 1000}, {"alice", 9000}, {"bob", 2000}};
     std::sort(rs.begin(), rs.end());
-    std::cout << "只按 score 排: ";
+    std::cout << "只按 score 排: ";  // 输出: 只按 score 排:
     for (const auto& p : rs)
-        std::cout << p.name << '(' << p.score << ") ";
+        std::cout << p.name << '(' << p.score << ") ";  // 输出: carol(1000) bob(2000) alice(9000)
     std::cout << '\n';
     return 0;
 }

@@ -26,11 +26,13 @@ int main()
     static_assert(0b11 == 3, "0b11 应是 3");
     static_assert(1'000 == 1000, "分隔符不改变数值");
 
-    std::cout << "perm    = " << perm << '\n';
-    std::cout << "one_mib = " << one_mib << '\n';
-    std::cout << "pi_approx = " << pi_approx << '\n';
+    std::cout << "perm    = " << perm << '\n';  // 输出: perm    = 5
+    std::cout << "one_mib = " << one_mib << '\n';  // 输出: one_mib = 1048576
+    std::cout << "pi_approx = " << pi_approx << '\n';  // 输出: pi_approx = 3.14159
 
     std::cout << "读写权限位 = " << (flags & rw_mask) << " (期望 3)\n";
+    // 输出: 读写权限位 = 3 (期望 3)
     std::cout << "高 6 位全清后 = " << (flags & 0b0011'1100) << " (期望 0)\n";
+    // 输出: 高 6 位全清后 = 0 (期望 0)
     return 0;
 }

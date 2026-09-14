@@ -29,7 +29,7 @@ public:
     explicit Server(Config cfg) : cfg_(std::move(cfg)) {}
     void start() const
     {
-        std::cout << "监听 " << cfg_.host << ':' << cfg_.port << '\n';
+        std::cout << "监听 " << cfg_.host << ':' << cfg_.port << '\n';  // 输出: 监听 127.0.0.1:8080
     }
 private:
     Config cfg_;
@@ -40,17 +40,17 @@ int main()
     // C++11 时代: std::unique_ptr<Server> s(new Server(Config{}));
     // 上面写法在极端情况有泄漏缺口, 且读起来绕 —— make_unique 一步到位:
     auto s = std::make_unique<Server>(Config{});
-    s->start();
+    s->start();  // 输出: 监听 127.0.0.1:8080
 
     // 数组版本: make_unique<int[]>(n) 初始化后像普通数组一样用 [] 访问
     auto arr = std::make_unique<int[]>(5);
     for (int i = 0; i < 5; ++i)
         arr[i] = i * i;
-    std::cout << "arr[4] = " << arr[4] << '\n';
+    std::cout << "arr[4] = " << arr[4] << '\n';  // 输出: arr[4] = 16
 
     // shared_ptr 侧: make_shared 单次分配对象+控制块, 性能更好
     auto cfg = std::make_shared<Config>();
     cfg->port = 9000;
-    std::cout << "shared config port = " << cfg->port << '\n';
+    std::cout << "shared config port = " << cfg->port << '\n';  // 输出: shared config port = 9000
     return 0;
 }

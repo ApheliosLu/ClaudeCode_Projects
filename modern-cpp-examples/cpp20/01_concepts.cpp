@@ -45,12 +45,12 @@ std::floating_point auto half_of(std::floating_point auto v) { return v / 2.0; }
 
 int main()
 {
-    std::cout << "what_type(1)   = " << what_type(1) << '\n';
-    std::cout << "what_type(2.5) = " << what_type(2.5) << '\n';
+    std::cout << "what_type(1)   = " << what_type(1) << '\n';  // 输出: what_type(1)   = 整数
+    std::cout << "what_type(2.5) = " << what_type(2.5) << '\n';  // 输出: what_type(2.5) = 浮点数
 
-    std::cout << "add_ten(5)   = " << add_ten(5) << '\n';
-    std::cout << "add_ten(3.5) = " << add_ten(3.5) << '\n';
-    std::cout << "half_of(9.0) = " << half_of(9.0) << '\n';
+    std::cout << "add_ten(5)   = " << add_ten(5) << '\n';  // 输出: add_ten(5)   = 15
+    std::cout << "add_ten(3.5) = " << add_ten(3.5) << '\n';  // 输出: add_ten(3.5) = 13.5
+    std::cout << "half_of(9.0) = " << half_of(9.0) << '\n';  // 输出: half_of(9.0) = 4.5
 
     // static_assert = 编译期断言, 为假直接编译失败(与运行时 assert 不同)
     // 概念本身就是编译期布尔量, 可静态断言:

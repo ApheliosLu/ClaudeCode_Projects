@@ -8,43 +8,52 @@
 // C++20 先引入 std::format(Python 风格的 {}); C++23 再加 print/println,
 // 直接把格式化结果写 stdout/stderr, 无需再 <<。
 //
-// ★ 本机工具链提示:
-//   MinGW-w64 的 g++ 15.2 libstdc++ 少了终端直写符号(std::__open_terminal /
-//   __write_to_terminal), 导致 std::println("{}", x) 链接失败 —— 这是该
-//   发行版的已知构建缺陷, 不是你的代码问题。
-//   在标准工具链(Linux GCC 14+ / LLVM 18+ / MSVC 17.8+)上, 直接写成:
-//       #include <print>
-//       std::println("Hello {}!", 42);            // 官方标准写法
-//   本文件用 std::format + std::cout 实现一个同名 println, 便于本机跑通,
-//   换标准工具链时把下面 println 换成 std::println 即可。
-// 编译: g++ -std=c++23 -Wall -Wextra 05_print_format.cpp -o demo
+// ★ 本机编译要点(2026-09-12): 本文件用的是**官方写法** std::println,
+//   编译时要多带一个参数 -lstdc++exp:
+//       g++ -std=c++23 05_print_format.cpp -o demo -lstdc++exp
+//   为什么? std::print/println 在检测到输出目标是终端时, 会改用操作系统原生
+//   Unicode API 直写(Windows 上 = 转 UTF-16 后调 WriteConsoleW), 从而**绕开代码页**。
+//   这块"终端支持"被 libstdc++ 单独放在**实验库** libstdc++exp.a 里(该库还含
+//   <stacktrace>、C++26 contracts、<text_encoding> 等), 不显式链接就会报:
+//       undefined reference to `std::__open_terminal(_iobuf*)'
+//       undefined reference to `std::__write_to_terminal(void*, std::span<char, ...>)'
+//   —— 这是缺一个链接参数, **不是**工具链缺陷, 不需要换 MinGW, 也不用换 MSVC。
+//   MSVC 17.8+ / LLVM 18+ 不需要这个参数。
+//   (历史: 本文件曾因此改用 std::format + std::cout 自造一个 println 绕行;
+//    2026-09-12 查明真因后改回官方写法。)
+//
+//   ⚠️ 终端直写只在"输出直连终端"时生效; 输出被重定向到管道/文件时退化成写
+//      UTF-8 字节 —— 所以它救不了"中间隔着 PowerShell"的场景(PowerShell 会把
+//      子进程输出读进去, 用自己的 gb2312 解码器再解一遍)。详见 README 文末
+//      「中文乱码问题：完整记录」。
+// 编译: g++ -std=c++23 -Wall -Wextra 05_print_format.cpp -o demo -lstdc++exp
 // ============================================================================
 #include <format>
-#include <iostream>
+#include <print>      // std::print / std::println (C++23)
 #include <string>
-#include <utility>
-
-// ---- 兼容层: 与 std::println 同签名; 替换成真 std::println 即官方代码 ----
-template <typename... Args>
-void println(std::format_string<Args...> fmt, Args&&... args)
-{
-    std::cout << std::format(fmt, std::forward<Args>(args)...) << '\n';
-}
 
 int main()
 {
     // {} 占位符按参数顺序填充; 类型在编译期校验(传错类型直接编译失败)
-    println("Hello, {}! 项目第 {} 天", "Modern C++", 7);
+    std::println("Hello, {}! 项目第 {} 天", "Modern C++", 7);  // 输出: Hello, Modern C++! 项目第 7 天
 
     // ---- 格式说明: 对齐 / 宽度 / 进制 / 精度 / 补零 ----
-    println("{:>10} | {:<10} |", "右对齐", "左对齐");
-    println("十进制 {} = 十六进制 {:#x} = 八进制 {:#o}", 255, 255, 255);
-    println("pi ≈ {:.4f}", 3.1415926535);
-    println("编号 {:06d}", 42);
+    std::println("{:>10} | {:<10} |", "右对齐", "左对齐");  // 输出:     右对齐 | 左对齐     |
+    std::println("十进制 {} = 十六进制 {:#x} = 八进制 {:#o}", 255, 255, 255);  // 输出: 十进制 255 = 十六进制 0xff = 八进制 0377
+    std::println("pi ≈ {:.4f}", 3.1415926535);  // 输出: pi ≈ 3.1416
+    std::println("编号 {:06d}", 42);  // 输出: 编号 000042
 
-    // ---- 格式化结果复用: 存成 std::string ----
+    // ---- print 不换行, println 换行(对比 C++98 的 puts/printf 组合) ----
+    std::print("print 不加换行: ");  // 输出: print 不加换行: 1 2 3 (这行是 println, 末尾带换行)
+    for (int i = 1; i <= 3; ++i) {
+        std::print("{} ", i);  // 输出: 1 2 3 (不换行)
+    }
+    std::println("(这行是 println, 末尾带换行)");  // 输出: (这行是 println, 末尾带换行)
+
+    // ---- 格式化结果复用: 先存成 std::string, 想什么时候输出再输出 ----
+    // 这一步只有 std::format 做得到 —— printf 只能直接打到 stdout, 拿不回字符串
     std::string msg = std::format("{} 与 {} 的和是 {}", 1, 2, 1 + 2);
-    std::cout << msg << '\n';
+    std::println("{}", msg);  // 输出: 1 与 2 的和是 3
 
     // 注意: 格式串必须编译期可见(C++26 会增加 std::runtime_format 等动态用法)
     return 0;

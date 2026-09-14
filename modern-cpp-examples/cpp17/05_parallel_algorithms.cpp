@@ -48,13 +48,17 @@ int main()
             .count();
     };
     std::cout << "seq 排序: " << ms(t0, t1) << " ms\n";
+    // 输出(示例, 每次运行数值不同): seq 排序: 131 ms
     std::cout << "par 排序: " << ms(t1, t2) << " ms\n";
+    // 输出(示例, 每次运行数值不同): par 排序: 135 ms
     std::cout << "两种策略结果一致: " << (a == b ? "是" : "否")
               << "  排序后首元素 = " << b[0] << '\n';
+    // 输出: 两种策略结果一致: 是  排序后首元素 = 0
 
     // par_unseq: 更激进的"就地变换", 元素互不干扰即可
     std::for_each(std::execution::par_unseq, b.begin(), b.end(),
                   [](int& x) { x = x % 1000; });
     std::cout << "for_each(par_unseq) 后 b[0] = " << b[0] << '\n';
+    // 输出: for_each(par_unseq) 后 b[0] = 0
     return 0;
 }

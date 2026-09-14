@@ -35,14 +35,14 @@ std::generator<unsigned long long> fibonacci_upto(unsigned long long limit)
 
 int main()
 {
-    std::cout << "evens(1, 12): ";
+    std::cout << "evens(1, 12): ";  // 输出: evens(1, 12): 2 4 6 8 10 12
     for (int v : evens(1, 12))
-        std::cout << v << ' ';           // 2 4 6 8 10 12
+        std::cout << v << ' ';           // 2 4 6 8 10 12  // 输出: 2 4 6 8 10 12
     std::cout << '\n';
 
-    std::cout << "fibonacci_upto(200): ";
+    std::cout << "fibonacci_upto(200): ";  // 输出: fibonacci_upto(200): 1 1 2 3 5 8 13 21 34 55 89 144
     for (auto v : fibonacci_upto(200))
-        std::cout << v << ' ';           // 1 1 2 3 5 8 13 21 34 55 89 144
+        std::cout << v << ' ';           // 1 1 2 3 5 8 13 21 34 55 89 144  // 输出: 1 1 2 3 5 8 13 21 34 55 89 144
     std::cout << '\n';
 
     // 对比 cpp20/06: 手写版的核心是"实现 promise/句柄/迭代器",

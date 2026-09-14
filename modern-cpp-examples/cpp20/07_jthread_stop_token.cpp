@@ -24,11 +24,11 @@ int main()
     {
         std::jthread t([] {
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
-            std::cout << "后台任务完成\n";
+            std::cout << "后台任务完成\n";  // 输出: 后台任务完成
         });
-        std::cout << "主线程不等它, 继续干活...\n";
+        std::cout << "主线程不等它, 继续干活...\n";  // 输出: 主线程不等它, 继续干活...
     }   // 离开作用域: 析构自动 join —— 任务一定跑完才往下走
-    std::cout << "jthread 已自动 join, 程序安全退出\n";
+    std::cout << "jthread 已自动 join, 程序安全退出\n";  // 输出: jthread 已自动 join, 程序安全退出
 
     // ---- 2. 协作式取消: 线程函数直接收 stop_token ----
     long long ticks = 0;
@@ -40,6 +40,7 @@ int main()
     worker.request_stop();                // 主线程发出停止请求
     // 析构时自动 join —— join 建立了 happens-before, ticks 的读取无数据竞争
     std::cout << "worker 收到停止信号, 累计跑了 " << ticks << " 圈\n";
+    // 输出(示例, 每次运行数值不同): worker 收到停止信号, 累计跑了 10884341 圈
 
     // ---- 3. stop_source 可独立于 jthread 使用(发给多个观察者) ----
     long long watches = 0;
@@ -53,5 +54,6 @@ int main()
         src.request_stop();               // 通知所有持有 token 的观察者
     }                                     // join 完成, 信号已生效
     std::cout << "watcher 观察到停止信号, 停止前看了 " << watches << " 次\n";
+    // 输出(示例, 每次运行数值不同): watcher 观察到停止信号, 停止前看了 5285452 次
     return 0;
 }

@@ -42,7 +42,7 @@ int main()
     for (auto& th : pool)
         th.join();                          // 必须 join/detach 后再析构
     std::cout << "加锁计数 = " << count
-              << " (期望 " << kThreads * kEach << ")\n";
+              << " (期望 " << kThreads * kEach << ")\n";   // 输出: 加锁计数 = 800000 (期望 800000)
 
     // ---- 2. std::atomic: 简单共享计数无锁化 ----
     std::atomic<long long> acount{0};
@@ -56,7 +56,7 @@ int main()
     for (auto& th : pool2)
         th.join();
     std::cout << "原子计数 = " << acount.load()
-              << " (期望 " << kThreads * kEach << ")\n";
+              << " (期望 " << kThreads * kEach << ")\n";   // 输出: 原子计数 = 800000 (期望 800000)
 
     // ---- 3. 线程跑一段累加: 各自写自己的局部变量, 最后汇总 ----
     // (让两个线程写同一个变量就是数据竞争 —— 现代 C++ 里这是未定义行为)
@@ -65,6 +65,6 @@ int main()
     std::thread t2([&part2] { for (int i = 500000; i < 1000000; ++i) part2 += i; });
     t1.join();
     t2.join();
-    std::cout << "1+2+...+999999 = " << part1 + part2 << '\n';
+    std::cout << "1+2+...+999999 = " << part1 + part2 << '\n';   // 输出: 1+2+...+999999 = 499999500000
     return 0;
 }
