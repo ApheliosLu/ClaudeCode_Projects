@@ -39,13 +39,14 @@ class Celsius:
         return self._celsius * 9 / 5 + 32
 
 t = Celsius(25)
-print("1) property 实况:")
-print("   t.celsius   =", t.celsius)
+print("1) property 实况:")  # → 1) property 实况:
+print("   t.celsius   =", t.celsius)  # →    t.celsius   = 25
 print("   t.fahrenheit =", round(t.fahrenheit, 2), "   # 派生属性, 没有 setter 就不能赋值")
+# 输出:    t.fahrenheit = 77.0    # 派生属性, 没有 setter 就不能赋值
 try:
     t.fahrenheit = 50
 except AttributeError as e:
-    print("   给只读属性赋值报错:", e)
+    print("   给只读属性赋值报错:", e)  # →    给只读属性赋值报错: property 'fahrenheit' of 'Celsius' object has no setter
 
 # ---- 2. 通用描述符: 防负数校验器(一次性写好, 处处复用) ----
 # 这是什么: __set_name__ —— 3.6+ 新增钩子: 此类属性被放进某个类时自动调用,
@@ -72,18 +73,18 @@ class Product:
     stock = PositiveNumber()                       # 再来一个, 逻辑零复制
 
 p = Product()
-print("\n2) 自定义描述符 PositiveNumber:")
+print("\n2) 自定义描述符 PositiveNumber:")  # → 2) 自定义描述符 PositiveNumber:
 p.price = 99.9
 p.stock = 42
-print("   p.price =", p.price, "; p.stock =", p.stock)
+print("   p.price =", p.price, "; p.stock =", p.stock)  # →    p.price = 99.9 ; p.stock = 42
 try:
     p.price = -5
 except ValueError as e:
-    print("   给 price 赋负数 →", e)
+    print("   给 price 赋负数 →", e)  # →    给 price 赋负数 → price 不能为负数
 try:
     p.price = "abc"
 except TypeError as e:
-    print("   给 price 赋字符串 →", e)
+    print("   给 price 赋字符串 →", e)  # →    给 price 赋字符串 → price 必须是数字
 
 # ---- 3. 数据描述符 vs 实例字典: 谁优先? ----
 # 这是什么: "数据描述符"(带 __set__)在属性查找中优先级高于实例 __dict__,
@@ -106,7 +107,9 @@ n = Num()
 n.describe = 4
 n.__dict__["describe"] = "实例字典里塞的假值"        # 强行污染实例字典
 print("\n3) 数据描述符优先于实例字典: n.describe =", n.describe, "  # 读到的是描述符结果")
+# 输出: 3) 数据描述符优先于实例字典: n.describe = 偶数   # 读到的是描述符结果
 print("   -- 没写 __set__ 的'非数据描述符'则反过来: 实例字典优先(此处不演示, 记结论即可)")
+# 输出:    -- 没写 __set__ 的'非数据描述符'则反过来: 实例字典优先(此处不演示, 记结论即可)
 
 # ---- 4. __slots__: 没有 __dict__ 的轻量实例 ----
 # 这是什么: __slots__ —— 类中的属性名列表, 声明"实例只用这些属性":
@@ -126,14 +129,16 @@ class Normal:
         self.x, self.y = x, y
 
 s, n = Slotted(1, 2), Normal(1, 2)
-print("\n4) __slots__ 实况:")
-print("   sys.getsizeof(Slotted 实例) =", sys.getsizeof(s), "字节")
-print("   sys.getsizeof(Normal 实例)  =", sys.getsizeof(n), "字节")
+print("\n4) __slots__ 实况:")  # → 4) __slots__ 实况:
+print("   sys.getsizeof(Slotted 实例) =", sys.getsizeof(s), "字节")  # →    sys.getsizeof(Slotted 实例) = 48 字节
+print("   sys.getsizeof(Normal 实例)  =", sys.getsizeof(n), "字节")  # →    sys.getsizeof(Normal 实例)  = 48 字节
 print("   (两个都 48: getsizeof 只算对象自身, 不算它引用的 __dict__ 字典 —— 真正的差异看规模对比)")
+# 输出:    (两个都 48: getsizeof 只算对象自身, 不算它引用的 __dict__ 字典 —— 真正的差异看规模对比)
 try:
     s.nickname = "拼错的属性"
 except AttributeError as e:
     print("   slots 实例挂未声明属性报错:", e)
+    # 输出:    slots 实例挂未声明属性报错: 'Slotted' object has no attribute 'nickname' and no __dict__ for setting new attributes
 
 # 规模对比: 10 万个实例的总内存差
 # 这是什么: tracemalloc —— 标准库内存统计器, 报告 Python 分配的内存峰值
@@ -147,10 +152,15 @@ make_many(Normal)
 _, peak = tracemalloc.get_traced_memory()
 tracemalloc.stop()
 print(f"   Normal 类 10 万实例: 峰值约 {peak / 1024 / 1024:.1f} MB")
+# 内存峰值随环境浮动:
+#    Normal 类 10 万实例: 峰值约 9.2 MB
 
 tracemalloc.start()
 make_many(Slotted)
 _, peak = tracemalloc.get_traced_memory()
 tracemalloc.stop()
 print(f"   Slotted 类 10 万实例: 峰值约 {peak / 1024 / 1024:.1f} MB   # 省下的就是省下的")
+# 内存峰值随环境浮动:
+#    Slotted 类 10 万实例: 峰值约 5.3 MB   # 省下的就是省下的
 print("   (结论: 大量同类对象场景[如游戏实体/缓存条目]用 __slots__, 单体少量对象没必要)")
+# 输出:    (结论: 大量同类对象场景[如游戏实体/缓存条目]用 __slots__, 单体少量对象没必要)

@@ -34,16 +34,16 @@ def get_profile(user_id):
         # 业务层不适合让 KeyError 裸奔出去 —— 包装成业务异常并串上原因
         raise ValueError(f"获取用户 {user_id} 资料失败") from e
 
-print("1) raise ... from ... 显式链(原因可见):")
+print("1) raise ... from ... 显式链(原因可见):")  # → 1) raise ... from ... 显式链(原因可见):
 try:
     get_profile(7)
 except ValueError as e:
-    print("   捕获到包装层 ValueError:", e)
+    print("   捕获到包装层 ValueError:", e)  # →    捕获到包装层 ValueError: 获取用户 7 资料失败
     # 这是什么: 异常对象.__cause__ —— 链的编程入口: 拿到 from 指定的原始异常
     #           (日志/监控系统靠它归档"根本原因"; traceback 也会显示
     #           "The above exception was the direct cause")。
-    print("   e.__cause__ 原始原因:", e.__cause__)
-print("   → __cause__ 串起病根; 完整链式 traceback 见第 5 节输出")
+    print("   e.__cause__ 原始原因:", e.__cause__)  # →    e.__cause__ 原始原因: 'user 7 不存在于缓存'
+print("   → __cause__ 串起病根; 完整链式 traceback 见第 5 节输出")  # →    → __cause__ 串起病根; 完整链式 traceback 见第 5 节输出
 
 # ---- 2. from None: 主动剪断上下文 ----
 # 这是什么: raise ... from None —— 抑制隐式上下文: 有些"包装"是纯粹的策略
@@ -56,12 +56,13 @@ def parse_conf(text):
         # 配置解析失败对用户只需要一句话, 细节(ValueError)不必外泄
         raise RuntimeError(f"配置文件第 3 行不是数字: {text!r}") from None
 
-print("\n2) from None 剪断上下文:")
+print("\n2) from None 剪断上下文:")  # → 2) from None 剪断上下文:
 try:
     parse_conf("abc")
 except RuntimeError as e:
-    print("   只显示包装后的异常:", e)
+    print("   只显示包装后的异常:", e)  # →    只显示包装后的异常: 配置文件第 3 行不是数字: 'abc'
 print("   ↑ traceback 只有 RuntimeError 一层(ValueError 被抑制), 输出干净")
+# 输出:    ↑ traceback 只有 RuntimeError 一层(ValueError 被抑制), 输出干净
 
 # ---- 3. 自定义异常体系: 业务按类型分类处理 ----
 # 这是什么: 自定义异常 —— 从 Exception 派生自己的异常类(惯例后缀 Error)。
@@ -84,34 +85,56 @@ def load_doc(doc_id, user):
         raise NotFoundError(f"文档 {doc_id} 不存在")
     return f"文档{doc_id}内容"
 
-print("\n3) 自定义异常体系(按类型分诊):")
+print("\n3) 自定义异常体系(按类型分诊):")  # → 3) 自定义异常体系(按类型分诊):
 for user, doc_id in [("admin", 5), ("访客", 5), ("admin", 999)]:
     try:
         body = load_doc(doc_id, user)
-        print(f"   {user} 读 {doc_id}: 成功 → {body}")
+        print(f"   {user} 读 {doc_id}: 成功 → {body}")  # →    admin 读 5: 成功 → 文档5内容
     except AppError as e:                  # 一个 except 接住全部业务错误
         kind = type(e).__name__
         status = 403 if isinstance(e, PermissionDeniedError) else 404
         print(f"   {user} 读 {doc_id}: [{kind}] {e}  (映射 HTTP {status})")
-print("   ↑ 只写一个 except AppError, 各子类型可再单独判断/再细分 except")
+        # 循环里另外两条: 权限不足/资源不存在 各输出一行:
+        #    访客 读 5: [PermissionDeniedError] 访客 无权限读取文档 5  (映射 HTTP 403)
+        #    admin 读 999: [NotFoundError] 文档 999 不存在  (映射 HTTP 404)
+print("   ↑ 只写一个 except AppError, 各子类型可再单独判断/再细分 except")  # →    ↑ 只写一个 except AppError, 各子类型可再单独判断/再细分 except
 
 # ---- 4. except (A, B): 一次捕获多种类型 + assert 与 raise 的分工 ----
-print("\n4) except 多类型 + assert 与 raise 的分工:")
+print("\n4) except 多类型 + assert 与 raise 的分工:")  # → 4) except 多类型 + assert 与 raise 的分工:
 try:
     int("不是数字")                       # 触发 ValueError
     int(None)                             # 若走到这行则触发 TypeError(同类处理)
 except (ValueError, TypeError) as e:      # 括号里列多种异常, 统一处理
-    print(f"   捕获 (ValueError, TypeError): {type(e).__name__}")
-print("   ↑ 两种异常都归这一个 except 块 —— 处理逻辑相同时不必写两遍")
+    print(f"   捕获 (ValueError, TypeError): {type(e).__name__}")  # →    捕获 (ValueError, TypeError): ValueError
+print("   ↑ 两种异常都归这一个 except 块 —— 处理逻辑相同时不必写两遍")  # →    ↑ 两种异常都归这一个 except 块 —— 处理逻辑相同时不必写两遍
 # 这是什么: assert —— 调试期断言"前置条件成立"(条件假直接抛 AssertionError),
 #           属于"开发期自检, 关不掉也在"; 而 raise 才是"运行期正式错误通道",
 #           给用户/上层处理。程序逻辑靠 raise 表达错误, assert 只做内部假设检查
 #           (可被 python -O 关闭, 不能当校验用)。
 
 # ---- 5. logging.exception 与链的配合(复习 06/02) ----
-print("\n5) 记录链式异常(完整栈进日志):")
+print("\n5) 记录链式异常(完整栈进日志):")  # → 5) 记录链式异常(完整栈进日志):
 try:
     get_profile(3)
 except ValueError:
     logging.exception("查询资料接口失败(链路: ValueError ← KeyError)")
-print("   ↑ 日志里两层异常都在, 排错不用猜")
+    # ERROR 行 + 两层异常完整 traceback(路径与行号随本文件位置/注释行数变化):
+    # ERROR:root:查询资料接口失败(链路: ValueError ← KeyError)
+    # Traceback (most recent call last):
+    #   File "<运行目录>\07_errors\01_exception_chain.py", line 32, in get_profile
+    #     fetch_user(user_id)
+    #     ~~~~~~~~~~^^^^^^^^^
+    #   File "<运行目录>\07_errors\01_exception_chain.py", line 28, in fetch_user
+    #     raise KeyError(f"user {user_id} 不存在于缓存")
+    # KeyError: 'user 3 不存在于缓存'
+    # 
+    # The above exception was the direct cause of the following exception:
+    # 
+    # Traceback (most recent call last):
+    #   File "<运行目录>\07_errors\01_exception_chain.py", line 114, in <module>
+    #     get_profile(3)
+    #     ~~~~~~~~~~~^^^
+    #   File "<运行目录>\07_errors\01_exception_chain.py", line 35, in get_profile
+    #     raise ValueError(f"获取用户 {user_id} 资料失败") from e
+    # ValueError: 获取用户 3 资料失败
+print("   ↑ 日志里两层异常都在, 排错不用猜")  # →    ↑ 日志里两层异常都在, 排错不用猜

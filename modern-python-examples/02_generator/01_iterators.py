@@ -15,13 +15,14 @@
 # ---- 1. for 循环的手工翻版: iter() + next() ----
 nums = [10, 20, 30]
 it = iter(nums)                            # 这是什么: iter() —— 从"可迭代对象"拿迭代器
-print("1) for 循环的手工翻版:")
-print("   iter(lst) 类型:", type(it).__name__)
-print("   next 依次取:", next(it), next(it), next(it))
+print("1) for 循环的手工翻版:")  # → 1) for 循环的手工翻版:
+print("   iter(lst) 类型:", type(it).__name__)  # →    iter(lst) 类型: list_iterator
+print("   next 依次取:", next(it), next(it), next(it))  # →    next 依次取: 10 20 30
 try:
     next(it)
 except StopIteration:
     print("   越界后 next 抛 StopIteration(结束信号) —— for 循环就是捕获它来停止的")
+    # 输出:    越界后 next 抛 StopIteration(结束信号) —— for 循环就是捕获它来停止的
 
 # ---- 2. 手写迭代器类: 从 0 计到 limit ----
 # 语法骨架: __iter__ 返回自身(迭代器协议约定还得是 iterable), __next__ 推进。
@@ -38,28 +39,30 @@ class Countdown:
         self.n -= 1
         return self.n + 1
 
-print("\n2) 自定义迭代器 Countdown(5):")
+print("\n2) 自定义迭代器 Countdown(5):")  # → 2) 自定义迭代器 Countdown(5):
 for i in Countdown(5):
     print("   ", i, end="")
-print("   ← 直接 for 一个自己写的类")
+    # 循环 5 次各输出一段(end="" 不换行, 与下一行拼接):
+    #     5    4    3    2    1 
+print("   ← 直接 for 一个自己写的类")  # →    ← 直接 for 一个自己写的类
 
 # ---- 3. iter(callable, sentinel): 哨兵迭代 ----
 # 这是什么: iter(可调用对象, 哨兵值) —— 内建的两个参数迭代器: 不断调用那个
 #           函数, 直到返回值等于哨兵值时结束。常用于"读到某个标记为止"。
-print("\n3) iter(callable, sentinel) 哨兵迭代:")
+print("\n3) iter(callable, sentinel) 哨兵迭代:")  # → 3) iter(callable, sentinel) 哨兵迭代:
 # 模拟"连续掷骰子直到掷出 6":
 import random
 
 random.seed(7)                         # 固定种子保证演示可复现(序列: 3,2,4,6)
 def roll():
     return random.randint(1, 6)
-print("   掷骰子到 6: ", list(iter(roll, 6)), "← 掷出 6 即停(6 本身不包含)")
+print("   掷骰子到 6: ", list(iter(roll, 6)), "← 掷出 6 即停(6 本身不包含)")  # →    掷骰子到 6:  [3, 2, 4] ← 掷出 6 即停(6 本身不包含)
 
 # ---- 4. 迭代器的"一次性消费"本性 ----
-print("\n4) 迭代器一次性消费:")
+print("\n4) 迭代器一次性消费:")  # → 4) 迭代器一次性消费:
 it2 = iter([1, 2, 3])
-print("   第一轮:", list(it2))
-print("   第二轮:", list(it2), "← 已被消费光, 空列表(没有后退键)")
+print("   第一轮:", list(it2))  # →    第一轮: [1, 2, 3]
+print("   第二轮:", list(it2), "← 已被消费光, 空列表(没有后退键)")  # →    第二轮: [] ← 已被消费光, 空列表(没有后退键)
 
 # ---- 5. reversed(): 需要 __reversed__ 或 __len__ + __getitem__ ----
 class CountDownExplicit:
@@ -70,12 +73,14 @@ class CountDownExplicit:
         return iter(reversed(self.seq))
 
 cd = CountDownExplicit([1, 2, 3])
-print("\n5) reversed() 配套:")
-print("   reversed(自定义类) =", list(reversed(cd)))
+print("\n5) reversed() 配套:")  # → 5) reversed() 配套:
+print("   reversed(自定义类) =", list(reversed(cd)))  # →    reversed(自定义类) = [3, 2, 1]
 print("   (没有 __reversed__ 时, reversed 回退用 __len__+__getitem__)")
+# 输出:    (没有 __reversed__ 时, reversed 回退用 __len__+__getitem__)
 
 # ---- 6. 顺带看一眼: 为什么文件也直接能 for? ----
 # 文件对象是迭代器(每 next 读一行); 这解释了为什么
 #   for line in open(...)
 # 是标准姿势, 也解释了为什么读文件必须重开才能再读。
 print("\n6) 附: file 也是迭代器 (每 next 取一行); for line in f 即一次次 next(f)")
+# 输出: 6) 附: file 也是迭代器 (每 next 取一行); for line in f 即一次次 next(f)

@@ -14,3 +14,9 @@ credentials.json
 .npmrc
 .aws/
 .ssh/
+
+# C++ 编译产物 (modern-cpp-examples 里 Ctrl+Shift+B 会在 .cpp 旁生成同名 exe)
+*.exe
+*.o
+*.obj
+*.out

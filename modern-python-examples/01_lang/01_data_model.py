@@ -30,11 +30,12 @@ class Point:
         return f"点({self.x}, {self.y})"           # 给用户看的文案
 
 p = Point(1, 2)
-print("1) str(p)  =", str(p))                       # 走 __str__
-print("   repr(p) =", repr(p))                      # 走 __repr__
-print("   print(p)=", p)                            # print 用 __str__
+print("1) str(p)  =", str(p))                       # 走 __str__  → 1) str(p)  = 点(1, 2)
+print("   repr(p) =", repr(p))                      # 走 __repr__  →    repr(p) = Point(1, 2)
+print("   print(p)=", p)                            # print 用 __str__  →    print(p)= 点(1, 2)
 print("   列表内元素显示 [p, Point(3, 4)]:", [p, Point(3, 4)])   # 用 __repr__
-print("   f-string 用 __str__:", f"坐标是 {p}")
+# 输出:    列表内元素显示 [p, Point(3, 4)]: [Point(1, 2), Point(3, 4)]
+print("   f-string 用 __str__:", f"坐标是 {p}")  # →    f-string 用 __str__: 坐标是 点(1, 2)
 
 # ---- 2. __eq__ / __hash__ / __lt__: 比较与哈希 ----
 # 这是什么: __eq__ 实现 ==(相等判断); 注意坑 —— 一旦定义了 __eq__,
@@ -54,21 +55,21 @@ class Money:
         return self.cents < other.cents
 
 m1, m2 = Money(100), Money(100)
-print("\n2) m1 == m2  →", m1 == m2)                 # 走 __eq__
+print("\n2) m1 == m2  →", m1 == m2)                 # 走 __eq__  → 2) m1 == m2  → True
 try:
     hash(m1)
 except TypeError as e:
-    print("   定义了 __eq__ 后 hash(m1) 报错:", e)   # 这个"坑"就是这里
+    print("   定义了 __eq__ 后 hash(m1) 报错:", e)   # 这个"坑"就是这里  →    定义了 __eq__ 后 hash(m1) 报错: unhashable type: 'Money'
 
 class MoneyWithHash(Money):
     def __hash__(self):
         return hash(self.cents)                      # 恢复哈希能力
 
 prices = {MoneyWithHash(100): "咖啡"}
-print("   实现 __hash__ 后可变 dict 键(映射到值):", prices[MoneyWithHash(100)])
+print("   实现 __hash__ 后可变 dict 键(映射到值):", prices[MoneyWithHash(100)])  # →    实现 __hash__ 后可变 dict 键(映射到值): 咖啡
 
 amounts = sorted([Money(300), Money(50), Money(200)])   # 排序走 __lt__
-print("   sorted() 用 __lt__ 排序:", [m.cents for m in amounts])
+print("   sorted() 用 __lt__ 排序:", [m.cents for m in amounts])  # →    sorted() 用 __lt__ 排序: [50, 200, 300]
 
 # ---- 3. __bool__ 与 __len__: 真值判断 ----
 # 这是什么: __len__ 实现 len(obj); 附带效果 —— 若没定义 __bool__,
@@ -85,9 +86,9 @@ class Cart:
         self.items.append(item)
 
 empty = Cart()
-print("\n3) 空购物车 bool:", bool(empty))            # False —— 回退 __len__
+print("\n3) 空购物车 bool:", bool(empty))            # False —— 回退 __len__  → 3) 空购物车 bool: False
 empty.add("苹果")
-print("   有 1 件商品 bool:", bool(empty))           # True
+print("   有 1 件商品 bool:", bool(empty))           # True  →    有 1 件商品 bool: True
 
 class Flag:
     """真值规则自定义: 文本里出现 yes/1/true 视为真（覆盖默认回退规则）"""
@@ -100,7 +101,7 @@ class Flag:
     def __bool__(self):
         return self.text.lower() in ("1", "yes", "true", "on")
 
-print("   Flag 自定义 bool:", bool(Flag("YES")), bool(Flag("no")))
+print("   Flag 自定义 bool:", bool(Flag("YES")), bool(Flag("no")))  # →    Flag 自定义 bool: True False
 
 # ---- 4. __getitem__ 与 __contains__: 下标与 in ----
 # 这是什么: __getitem__ 实现 obj[key] 下标访问, 让对象"可索引";
@@ -118,10 +119,10 @@ class MyList:
         return item in self.data
 
 ml = MyList([10, 20, 30, 40])
-print("\n4) ml[0]   =", ml[0])
-print("   ml[-1]  =", ml[-1], "   # 负索引由 list 转发处理")
-print("   ml[1:3] =", ml[1:3], "   # index 是 slice 对象")
-print("   20 in ml =", 20 in ml)
+print("\n4) ml[0]   =", ml[0])  # → 4) ml[0]   = 10
+print("   ml[-1]  =", ml[-1], "   # 负索引由 list 转发处理")  # →    ml[-1]  = 40    # 负索引由 list 转发处理
+print("   ml[1:3] =", ml[1:3], "   # index 是 slice 对象")  # →    ml[1:3] = [20, 30]    # index 是 slice 对象
+print("   20 in ml =", 20 in ml)  # →    20 in ml = True
 
 # ---- 5. __iter__: 让对象可被 for 遍历 ----
 # 这是什么: __iter__ 实现 for 循环遍历(返回迭代器对象, 详见 02_generator);
@@ -133,9 +134,13 @@ class Words:
     def __iter__(self):
         return iter(self.words)
 
-print("\n5) for 遍历 Words:")
+print("\n5) for 遍历 Words:")  # → 5) for 遍历 Words:
 for word in Words("hello python world"):
     print("   -", word)
+    # 输出:
+    #    - hello
+    #    - python
+    #    - world
 
 # ---- 6. __call__: 让实例像函数一样被调用 ----
 # 这是什么: __call__ 实现 obj(...) 调用 —— 实例变成"有状态的函数";
@@ -149,5 +154,5 @@ class Adder:
         return self.base + x
 
 add10 = Adder(10)
-print("\n6) add10(5)  =", add10(5))
-print("   callable(实例) =", callable(add10))
+print("\n6) add10(5)  =", add10(5))  # → 6) add10(5)  = 15
+print("   callable(实例) =", callable(add10))  # →    callable(实例) = True

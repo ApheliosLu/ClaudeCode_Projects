@@ -37,10 +37,14 @@ def fast_join():
 
 t_slow = timeit.timeit(slow_concat, number=3)
 t_fast = timeit.timeit(fast_join, number=3)
-print("1) 字符串拼接: += 循环 vs join(timeit, 3 次合计):")
+print("1) 字符串拼接: += 循环 vs join(timeit, 3 次合计):")  # → 1) 字符串拼接: += 循环 vs join(timeit, 3 次合计):
 print(f"   += 循环 : {t_slow:.4f}s")
+# 耗时随机器/负载浮动:
+#    += 循环 : 0.1005s
 print(f"   join    : {t_fast:.4f}s   ← 快 {t_slow / t_fast:.0f} 倍")
-print("   结论: 循环拼串用 += 是 O(n²) 反模式, 收集进 list 再 join")
+# 倍率随机器浮动:
+#    join    : 0.0009s   ← 快 114 倍
+print("   结论: 循环拼串用 += 是 O(n²) 反模式, 收集进 list 再 join")  # →    结论: 循环拼串用 += 是 O(n²) 反模式, 收集进 list 再 join
 
 # ---- 2. timeit: 裸 for 循环 vs 列表推导 ----
 # 这是什么: 列表推导比裸 for+append 快(推导的循环在解释器内部优化执行);
@@ -56,13 +60,17 @@ def fast_build():
 
 t_sb = timeit.timeit(slow_build, number=2)
 t_fb = timeit.timeit(fast_build, number=2)
-print("\n2) 造 100 万整数平方: 裸 for vs 推导(timeit, 2 次合计):")
+print("\n2) 造 100 万整数平方: 裸 for vs 推导(timeit, 2 次合计):")  # → 2) 造 100 万整数平方: 裸 for vs 推导(timeit, 2 次合计):
 print(f"   for+append: {t_sb:.3f}s")
+# 耗时随机器浮动:
+#    for+append: 0.084s
 print(f"   列表推导  : {t_fb:.3f}s   ← 快 {t_sb / t_fb:.2f} 倍")
+# 倍率随机器浮动:
+#    列表推导  : 0.073s   ← 快 1.16 倍
 # 实测注(3.14): 3.11+ 的自适应特化把 for+append 优化得很接近推导, 纯数值
 # 场景差距只剩 ~1.1 倍(早版本差距明显更大)。真正理由转向可读性:
-print("   实测结论: 差距仅 ~1.1 倍(3.11+ 特化后)—— 推导更短、无'忘初始化'")
-print("   类低级错误, 仍是首选; 差距放大的场景是推导带条件过滤/复合映射")
+print("   实测结论: 差距仅 ~1.1 倍(3.11+ 特化后)—— 推导更短、无'忘初始化'")  # →    实测结论: 差距仅 ~1.1 倍(3.11+ 特化后)—— 推导更短、无'忘初始化'
+print("   类低级错误, 仍是首选; 差距放大的场景是推导带条件过滤/复合映射")  # →    类低级错误, 仍是首选; 差距放大的场景是推导带条件过滤/复合映射
 
 # ---- 3. cProfile: 整个程序慢在哪 —— 看函数级耗时排名 ----
 # 这是什么: cProfile —— 标准库性能剖析器: 记录每个函数被调多少次、累计耗时,
@@ -83,17 +91,30 @@ prof.disable()
 
 buf = io.StringIO()
 pstats.Stats(prof, stream=buf).sort_stats("tottime").print_stats(8)
-print("\n3) cProfile 热点剖析(do_report_job 内部):")
-print(f"   任务结果: {result}")
-print("   " + "-" * 66)
+print("\n3) cProfile 热点剖析(do_report_job 内部):")  # → 3) cProfile 热点剖析(do_report_job 内部):
+print(f"   任务结果: {result}")  # →    任务结果: 39999800000
+print("   " + "-" * 66)  # →    ------------------------------------------------------------------
 lines = buf.getvalue().splitlines()
 for line in lines[:14]:                              # 摘要头 + 前几行热点
     print("   " + line.rstrip())
-print("   " + "-" * 66)
-print("   找最慢: 看 tottime 最大的一行(本任务是排序/推导/求和三者)")
-print("   (完整文件剖析: python -m cProfile -s tottime 你的脚本.py)")
+    # cProfile 摘要(cumtime 等数值随机器浮动, 行首空格已含在输出里):
+    #             4 function calls in 0.007 seconds
+    #    
+    #       Ordered by: internal time
+    #    
+    #       ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    #            1    0.005    0.005    0.007    0.007 <脚本路径>:73(do_report_job)
+    #            1    0.001    0.001    0.001    0.001 {method 'sort' of 'list' objects}
+    #            1    0.000    0.000    0.000    0.000 {built-in method builtins.sum}
+    #            1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+    #    
+    #    
+print("   " + "-" * 66)  # →    ------------------------------------------------------------------
+print("   找最慢: 看 tottime 最大的一行(本任务是排序/推导/求和三者)")  # →    找最慢: 看 tottime 最大的一行(本任务是排序/推导/求和三者)
+print("   (完整文件剖析: python -m cProfile -s tottime 你的脚本.py)")  # →    (完整文件剖析: python -m cProfile -s tottime 你的脚本.py)
 
 # ---- 4. 指向: 记忆化加速已演示于 06_stdlib/04_functools.py ----
 # lru_cache/@cache 也是性能手段(重复子问题缓存), 完整演示见 06_stdlib/04;
 # 这里不再重复 —— 记住工具箱位置即可:
 print("\n4) 相关工具位置: 记忆化 @cache → 06_stdlib/04 | 日志排查 → 06_stdlib/02")
+# 输出: 4) 相关工具位置: 记忆化 @cache → 06_stdlib/04 | 日志排查 → 06_stdlib/02

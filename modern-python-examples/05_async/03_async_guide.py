@@ -25,16 +25,25 @@ async def main():
     #     → to_thread 丢线程(02/03), 或干脆用线程/进程池整段跑
     #   其实只是"串一串 IO 很简单"?
     #     → 同步代码 + 线程池就够, 别上 async(复杂度是债, 同 04 结论)
-    print("1) 决策表(想清楚再动手):")
+    print("1) 决策表(想清楚再动手):")  # → 1) 决策表(想清楚再动手):
     print("   ┌────────────┬────────────────────────────────────┐")
+    # 输出:    ┌────────────┬────────────────────────────────────┐
     print("   │ 场景        │ 结论                              │")
+    # 输出:    │ 场景        │ 结论                              │
     print("   ├────────────┼────────────────────────────────────┤")
+    # 输出:    ├────────────┼────────────────────────────────────┤
     print("   │ 大量网络 IO │ asyncio(单循环跑千级并发等待)      │")
+    # 输出:    │ 大量网络 IO │ asyncio(单循环跑千级并发等待)      │
     print("   │ (爬虫/网关) │ ← 这是 async 唯一的舒适区         │")
+    # 输出:    │ (爬虫/网关) │ ← 这是 async 唯一的舒适区         │
     print("   │ CPU 密集    │ multiprocessing / 进程池(见 04)    │")
+    # 输出:    │ CPU 密集    │ multiprocessing / 进程池(见 04)    │
     print("   │ 阻塞库调用  │ to_thread / 线程池(02/03 已演示)    │")
+    # 输出:    │ 阻塞库调用  │ to_thread / 线程池(02/03 已演示)    │
     print("   │ 简单串行脚本│ 同步就完事, 别引 async             │")
+    # 输出:    │ 简单串行脚本│ 同步就完事, 别引 async             │
     print("   └────────────┴────────────────────────────────────┘\n")
+    # 输出:    └────────────┴────────────────────────────────────┘
 
     # ---- 2. 反模式一: 在协程里跑同步阻塞(01/03 的延伸) ----
     # time.sleep 已实测会冻结全场(01 节 3: 两任务排队睡 0.8s)。
@@ -42,8 +51,9 @@ async def main():
     #           cv2.imread / pandas.read_csv / 任何 C 扩展的重活 ——
     #           它们要么阻塞要么占用 GIL, 在协程里都是"不让出"。
     # 自检: async 函数体里若找不到几个 await, 它就不是异步函数。
-    print("2) 反模式一(记住, 不必重跑): 协程里裸调阻塞库 = 冻住全场")
+    print("2) 反模式一(记住, 不必重跑): 协程里裸调阻塞库 = 冻住全场")  # → 2) 反模式一(记住, 不必重跑): 协程里裸调阻塞库 = 冻住全场
     print("   time.sleep 实测 0.8s(01); requests/cv2/pandas 同族 —— 一律 to_thread\n")
+    # 输出:    time.sleep 实测 0.8s(01); requests/cv2/pandas 同族 —— 一律 to_thread
 
     # ---- 3. 反模式二: async 代码里用 threading.Lock ----
     # 为什么错: 事件循环是单线程协作式 —— 根本不需要"跨线程锁"。
@@ -53,18 +63,24 @@ async def main():
     #   3) 若将来用 run_in_executor 混线程, 锁的归属更说不清。
     # 正解: asyncio.Lock —— 用法与 threading.Lock 同款, 但可跨 await 持锁
     #   (await 让出时锁不松; 别的协程 acquire 会挂起排队)。
-    print("3) asyncio.Lock(threading.Lock 的 async 正解):")
+    print("3) asyncio.Lock(threading.Lock 的 async 正解):")  # → 3) asyncio.Lock(threading.Lock 的 async 正解):
     printer = asyncio.Lock()
 
     async def print_job(name: str, sec: float):
         async with printer:                 # 拿不到就挂起等(await 点! 不轮询)
             print(f"   [{name}] 进入打印区, 开始…")
+            # A、B 两个协程各输出一行(先 A 后 B: 持锁排队):
+            #    [A] 进入打印区, 开始…
+            #    [B] 进入打印区, 开始…
             await asyncio.sleep(sec)        # 持锁让出: 别的协程进不来
             print(f"   [{name}] 打印完毕, 退出\n")
+            # A、B 各输出一行:
+            #    [A] 打印完毕, 退出
+            #    [B] 打印完毕, 退出
 
     await asyncio.gather(print_job("A", 0.1), print_job("B", 0.05))
-    print("   看输出: A 完整跑完 B 才进 —— 若没锁/用错锁, B 会插进 A 中间")
-    print("   (threading.Lock 同线程二次 acquire 死锁 → 千万别在协程里用)\n")
+    print("   看输出: A 完整跑完 B 才进 —— 若没锁/用错锁, B 会插进 A 中间")  # →    看输出: A 完整跑完 B 才进 —— 若没锁/用错锁, B 会插进 A 中间
+    print("   (threading.Lock 同线程二次 acquire 死锁 → 千万别在协程里用)\n")  # →    (threading.Lock 同线程二次 acquire 死锁 → 千万别在协程里用)
 
     # ---- 4. 反模式三: async 函数里没有 await(伪异步) ----
     # 教学点: async def 体内没有 await = 函数从头到尾"不让出",
@@ -82,18 +98,21 @@ async def main():
 
     t0 = time.perf_counter()
     await asyncio.gather(fake_async(), fast_job())
-    print(f"4) 伪异步演示: 0.3 秒级 CPU 循环 + 0.05s 小任务并发")
+    print(f"4) 伪异步演示: 0.3 秒级 CPU 循环 + 0.05s 小任务并发")  # → 4) 伪异步演示: 0.3 秒级 CPU 循环 + 0.05s 小任务并发
     print(f"   总耗时 {time.perf_counter() - t0:.2f}s —— 小任务被 CPU 循环挡住,")
-    print("   等它跑完才有机会: async 救不了 CPU 活(不让出 = 同步)")
-    print("   → CPU 活丢进程池(to_thread 也只是借线程, 同样治标不治本)\n")
+    # CPU 循环耗时随机器浮动:
+    #    总耗时 0.16s —— 小任务被 CPU 循环挡住,
+    print("   等它跑完才有机会: async 救不了 CPU 活(不让出 = 同步)")  # →    等它跑完才有机会: async 救不了 CPU 活(不让出 = 同步)
+    print("   → CPU 活丢进程池(to_thread 也只是借线程, 同样治标不治本)\n")  # →    → CPU 活丢进程池(to_thread 也只是借线程, 同样治标不治本)
 
     # ---- 5. 收尾清单 ----
-    print("5) 最后清单(写异步前逐条过):")
-    print("   □ 我的瓶颈真的是'大量并发等待'吗?(不然别用)")
+    print("5) 最后清单(写异步前逐条过):")  # → 5) 最后清单(写异步前逐条过):
+    print("   □ 我的瓶颈真的是'大量并发等待'吗?(不然别用)")  # →    □ 我的瓶颈真的是'大量并发等待'吗?(不然别用)
     print("   □ 协程内没有裸阻塞调用?(time.sleep/requests/cv2… → to_thread)")
-    print("   □ 锁用的是 asyncio.Lock?(threading.Lock 是坑)")
-    print("   □ 长的 CPU 段已移出协程?(事件循环需要让出点)")
-    print("   □ 每个协程最终都被 await/gather/create_task 收走了?")
+    # 输出:    □ 协程内没有裸阻塞调用?(time.sleep/requests/cv2… → to_thread)
+    print("   □ 锁用的是 asyncio.Lock?(threading.Lock 是坑)")  # →    □ 锁用的是 asyncio.Lock?(threading.Lock 是坑)
+    print("   □ 长的 CPU 段已移出协程?(事件循环需要让出点)")  # →    □ 长的 CPU 段已移出协程?(事件循环需要让出点)
+    print("   □ 每个协程最终都被 await/gather/create_task 收走了?")  # →    □ 每个协程最终都被 await/gather/create_task 收走了?
 
 
 asyncio.run(main())

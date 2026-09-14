@@ -1,0 +1,14 @@
+{
+  // 打开本目录时的默认解释器 —— 就是 README 里实测用的那个 Miniforge py314 (3.14.3)
+  // 作用: 右上角 ▶ 按钮、F5、Pylance 类型提示都直接用它, 不用每次手动选
+  // (终端里的 Ctrl+Shift+B 任务走的是 PATH 上的 python, 本机也是同一个, 一致)
+  "python.defaultInterpreterPath": "D:/Miniforge3/envs/py314/python.exe",
+
+  // 集成终端里永远带上 PYTHONUTF8=1
+  // 只解决一种情况: 输出被重定向/走管道时, Python 会退回系统编码 cp936(GBK), 中文乱码。
+  // 直接交互运行本来就走控制台的 UTF-8 通道, 不需要它 —— 加上是买个保险,
+  // 顺便让 `python f.py > out.txt` 写出来的是 UTF-8 而不是 GBK。
+  "terminal.integrated.env.windows": {
+    "PYTHONUTF8": "1"
+  }
+}

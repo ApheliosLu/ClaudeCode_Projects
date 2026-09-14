@@ -20,17 +20,20 @@ eg = ExceptionGroup("批量导入失败", [
     TypeError("第 5 行: 缺少必填字段"),
     ValueError("第 8 行: 数量为负"),
 ])
-print("1) except* 按类型分治:")
+print("1) except* 按类型分治:")  # → 1) except* 按类型分治:
 try:
     raise eg
 except* ValueError as vg:                       # 星号: 接走"所有 ValueError 成员"
-    print(f"   [ValueError 组] 共 {len(vg.exceptions)} 个:")
+    print(f"   [ValueError 组] 共 {len(vg.exceptions)} 个:")  # →    [ValueError 组] 共 2 个:
     for e in vg.exceptions:
         print(f"     - {e}")
+        # 组内两个 ValueError 各输出一行:
+        #      - 第 2 行: 价格不是数字
+        #      - 第 8 行: 数量为负
 except* TypeError as tg:
     print(f"   [TypeError 组] 共 {len(tg.exceptions)} 个:",
-          [str(e) for e in tg.exceptions])
-print("   → 三类成员各归各家处理; 组内每类都有人接, 整体才算处理完")
+          [str(e) for e in tg.exceptions])  # →    [TypeError 组] 共 1 个: ['第 5 行: 缺少必填字段']
+print("   → 三类成员各归各家处理; 组内每类都有人接, 整体才算处理完")  # →    → 三类成员各归各家处理; 组内每类都有人接, 整体才算处理完
 
 # ---- 2. 嵌套组: 自动穿透外壳, 返回的是"保留壳的子组" ----
 # 这是什么: except* 面对嵌套组会自动"穿透": 匹配叶子异常时把内层挑出来,
@@ -46,30 +49,31 @@ def flatten(g):
     for e in g.exceptions:
         yield from flatten(e) if isinstance(e, ExceptionGroup) else (e,)
 
-print("\n2) 嵌套组自动穿透(返回子组, 叶子需自拆):")
+print("\n2) 嵌套组自动穿透(返回子组, 叶子需自拆):")  # → 2) 嵌套组自动穿透(返回子组, 叶子需自拆):
 try:
     raise nested
 except* ValueError as vg:
-    print("   ValueError 子组:", vg)                       # 还是带壳的组
-    print("   递归拆出叶子     :", [str(e) for e in flatten(vg)])
+    print("   ValueError 子组:", vg)                       # 还是带壳的组  →    ValueError 子组: 任务组 (1 sub-exception)
+    print("   递归拆出叶子     :", [str(e) for e in flatten(vg)])  # →    递归拆出叶子     : ['图 1 下载超时', '图 2 超时']
 except* TypeError as tg:
-    print("   TypeError 子组  :", [str(e) for e in flatten(tg)])
+    print("   TypeError 子组  :", [str(e) for e in flatten(tg)])  # →    TypeError 子组  : ['格式不合法']
 
 # ---- 3. 没人接的成员会怎样: 逃逸! ----
 # 这是什么: 若组里某种类型没有对应 except* 接 —— 处理完后剩下的成员会
 #           "原样抛出"(组名自动改成"未处理子异常")。所以要么把所有类型
 #           都 except* 到, 要么最后留一个 except Exception 兜底整组。
-print("\n3) 未接走的成员会继续抛(演示后接住):")
+print("\n3) 未接走的成员会继续抛(演示后接住):")  # → 3) 未接走的成员会继续抛(演示后接住):
 leftover = ExceptionGroup("混合", [ValueError("有人接"), RuntimeError("没人接")])
 try:
     try:
         raise leftover
     except* ValueError as vg:
-        print("   只接了 ValueError:", [str(e) for e in vg.exceptions])
+        print("   只接了 ValueError:", [str(e) for e in vg.exceptions])  # →    只接了 ValueError: ['有人接']
     # RuntimeError 没人接 → 这里会重新抛出(注意没走 except*, 是普通 try 的 except)
 except Exception as whole:
     print(f"   RuntimeError 逃逸, 被外层普通 except 接住: {whole}")
-    print("   (组名自动变成 '(1 sub-exception)')—— 提醒你还有异常未分诊")
+    # 输出:    RuntimeError 逃逸, 被外层普通 except 接住: 混合 (1 sub-exception)
+    print("   (组名自动变成 '(1 sub-exception)')—— 提醒你还有异常未分诊")  # →    (组名自动变成 '(1 sub-exception)')—— 提醒你还有异常未分诊
 
 # ---- 4. 实战视角: asyncio.TaskGroup 与它什么关系 ----
 # 这是什么: asyncio.TaskGroup(3.11+, 见 05_async/02) —— 组里任何一个任务
@@ -77,6 +81,8 @@ except Exception as whole:
 #           ExceptionGroup 抛给你 —— 你在 except* 里按类型分诊即可。
 #           所以"并发任务批量失败"现在有标准答案:
 #           收集端 = TaskGroup, 报错端 = ExceptionGroup, 处理端 = except*。
-print("\n4) 实战衔接:")
+print("\n4) 实战衔接:")  # → 4) 实战衔接:
 print("   asyncio.TaskGroup 抛出的就是 ExceptionGroup —— 处理写法同本文件")
+# 输出:    asyncio.TaskGroup 抛出的就是 ExceptionGroup —— 处理写法同本文件
 print("   (完整演示见 05_async/02_asyncio_tasks.py 的 TaskGroup 小节)")
+# 输出:    (完整演示见 05_async/02_asyncio_tasks.py 的 TaskGroup 小节)

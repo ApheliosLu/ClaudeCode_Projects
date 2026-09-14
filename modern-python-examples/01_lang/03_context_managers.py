@@ -24,12 +24,24 @@ class Resource:
 
     def __enter__(self):
         print(f"   进入: {self.name}")
+        # 每次进入 with 块时各输出一行(共 5 次):
+        #    进入: A0
+        #    进入: A1
+        #    进入: B
+        #    进入: X
+        #    进入: Y
         return self
 
     def __exit__(self, exc_type, exc, tb):
         # 这是什么: __exit__ 收到三个参数 —— 异常类型/异常对象/回溯对象;
         #           无异常时三者均为 None。
         print(f"   退出: {self.name}")
+        # 每次退出 with 块时各输出一行(共 5 次, 反序):
+        #    退出: B
+        #    退出: A1
+        #    退出: A0
+        #    退出: Y
+        #    退出: X
         return False                                # False = 不吞异常
 
 # ---- 1. 手写一个上下文管理器: 计时器 ----
@@ -37,12 +49,14 @@ class Timer:
     """计时器上下文: __enter__ 记录起点, __exit__ 结算耗时 —— 顺带观察顺序"""
     def __enter__(self):
         self.start = time.perf_counter()
-        print("1) 进入代码块(Timer.__enter__)")
+        print("1) 进入代码块(Timer.__enter__)")  # → 1) 进入代码块(Timer.__enter__)
         return self                                 # as 拿到的是这里返回的对象
 
     def __exit__(self, exc_type, exc, tb):
         cost = time.perf_counter() - self.start
         print(f"   离开代码块(Timer.__exit__), 耗时 {cost*1000:.2f} ms\n")
+        # 耗时随机器/负载浮动:
+        #    离开代码块(Timer.__exit__), 耗时 40.64 ms
         return False
 
 with Timer():                                       # as 结果也可以忽略
@@ -59,13 +73,13 @@ class IgnoreError:
 
     def __exit__(self, exc_type, exc, tb):
         if exc_type is self.target:
-            print(f"2) 吞掉了 {exc_type.__name__}(演示: 视需求免责)")
+            print(f"2) 吞掉了 {exc_type.__name__}(演示: 视需求免责)")  # → 2) 吞掉了 ValueError(演示: 视需求免责)
             return True                             # True = 异常不再向上抛
         return False                                # 其他异常照常抛出
 
 with IgnoreError(ValueError):
     raise ValueError("库内部错误, 但不值得崩掉整个程序")
-print("   被吞掉后, 这行照常执行了 —— 程序没崩溃\n")
+print("   被吞掉后, 这行照常执行了 —— 程序没崩溃\n")  # →    被吞掉后, 这行照常执行了 —— 程序没崩溃
 
 # ---- 3. @contextmanager 装饰器: 用生成器写小巧的上下文 ----
 # 这是什么: contextlib.contextmanager —— 免写类, 把一个"用 yield 分成前后两段"
@@ -74,14 +88,14 @@ print("   被吞掉后, 这行照常执行了 —— 程序没崩溃\n")
 #           注意: 清理代码必须包在 try/finally 里 —— 否则异常时不会走到清理段。
 @contextmanager
 def tag(name):
-    print(f"3) <{name}> 开始")
+    print(f"3) <{name}> 开始")  # → 3) <p> 开始
     try:
         yield                                       # 这行前/后就是 enter/exit 的界线
     finally:
-        print(f"   </{name}> 结束")
+        print(f"   </{name}> 结束")  # →    </p> 结束
 
 with tag("p"):
-    print("   代码块内容(在 begin/end 之间)")
+    print("   代码块内容(在 begin/end 之间)")  # →    代码块内容(在 begin/end 之间)
 
 # @contextmanager 在 except 里接异常:
 @contextmanager
@@ -90,27 +104,28 @@ def risky():
         yield
     except ZeroDivisionError:
         print("   4) @contextmanager 内 except ZeroDivisionError, 吞掉")
+        # 输出:    4) @contextmanager 内 except ZeroDivisionError, 吞掉
 
 with risky():
     x = 1 / 0
-print("   这行照常执行 —— 异常被 contextmanager 吞了\n")
+print("   这行照常执行 —— 异常被 contextmanager 吞了\n")  # →    这行照常执行 —— 异常被 contextmanager 吞了
 
 # ---- 4. ExitStack: 动态堆叠数量不定的资源 ----
 # 这是什么: contextlib.ExitStack —— 以"栈"的方式登记任意多个上下文/清理回调,
 #           with 块结束后按登记的反序(后进先出)逐一退出/执行;
 #           适合"要清理的资源数量运行时才知道"的场景(循环里临时加句柄/锁)。
-print("4) ExitStack: 循环里动态登记资源, 结束时反序清理")
+print("4) ExitStack: 循环里动态登记资源, 结束时反序清理")  # → 4) ExitStack: 循环里动态登记资源, 结束时反序清理
 with ExitStack() as stack:
     for i in range(2):                              # 动态数量演示
         stack.enter_context(Resource(f"A{i}"))
     stack.enter_context(Resource("B"))
     # 这是什么: stack.callback —— 登记一个"退出时执行一次"的任意函数(不需要上下文对象)
-    stack.callback(lambda: print("   回调: 兜底清理(任何情况都会执行)"))
-    print("   [代码块执行中...]")
-print("   with 结束: 登记的资源按反序退出(后进先出)\n")
+    stack.callback(lambda: print("   回调: 兜底清理(任何情况都会执行)"))  # →    回调: 兜底清理(任何情况都会执行)
+    print("   [代码块执行中...]")  # →    [代码块执行中...]
+print("   with 结束: 登记的资源按反序退出(后进先出)\n")  # →    with 结束: 登记的资源按反序退出(后进先出)
 
 # ---- 5. 一条 with 开多个资源 ----
 # 语法: with A(), B(): ...  —— 进入按顺序, 退出反序(都归栈管)。
-print("5) 一条 with 打开多个上下文(进入顺序, 退出反序):")
+print("5) 一条 with 打开多个上下文(进入顺序, 退出反序):")  # → 5) 一条 with 打开多个上下文(进入顺序, 退出反序):
 with Resource("X"), Resource("Y"):
-    print("   [代码块执行中...]\n")
+    print("   [代码块执行中...]\n")  # →    [代码块执行中...]

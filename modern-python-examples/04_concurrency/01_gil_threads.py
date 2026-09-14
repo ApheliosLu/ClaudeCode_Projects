@@ -21,8 +21,11 @@ import time
 
 print("0) 环境快照:")
 print("   CPU 核数(os.cpu_count) =", os.cpu_count())
+# 核数随机器而定:
+#    CPU 核数(os.cpu_count) = 28
 print("   sys._is_gil_enabled() =", sys._is_gil_enabled(),
       "  # (3.13 起提供; False = 本程序运行在自由线程构建)")
+      # 输出:    sys._is_gil_enabled() = True   # (3.13 起提供; False = 本程序运行在自由线程构建)
 
 # ---- 1. 数据竞争: 无锁 vs 加锁 ----
 # 竞争的本质: counter += 1 在底层是"读 → 改 → 写"三步, 两个线程的交错可能
@@ -63,15 +66,18 @@ def race_counter(with_lock: bool):
         t.join()
     return counter
 
-print("\n1) 数据竞争演示(两线程各 +200_000, 临界区里带 sleep(0) 模拟 IO):")
+print("\n1) 数据竞争演示(两线程各 +200_000, 临界区里带 sleep(0) 模拟 IO):")  # → 1) 数据竞争演示(两线程各 +200_000, 临界区里带 sleep(0) 模拟 IO):
 no_lock = race_counter(False)
 print("   无锁:   ", no_lock, " ← 远小于 400_000! 读改写被打断 → 更新互相覆盖(损失",
       2 * N - no_lock, "次)")
+      # 无锁计数是概率结果, 每次运行不同(本例 200435), 必定远小于 400_000:
+      #    无锁:    200435  ← 远小于 400_000! 读改写被打断 → 更新互相覆盖(损失 199565 次)
 with_lock = race_counter(True)
 print("   加 Lock:", with_lock, " ← 恰好 400_000(锁让'读-改-写'原子成块, 谁也插不进)")
-print("   [教学注] 若把上面 sleep(0) 删掉(纯算数循环): 3.13+ 实测零损失 ——")
-print("             GIL 切换点不在三步之间; 但临界区有 IO 就是另一回事了,")
-print("             且自由线程版 Python(无 GIL)纯算数也丢 → 锁仍旧必须写")
+# 输出:    加 Lock: 400000  ← 恰好 400_000(锁让'读-改-写'原子成块, 谁也插不进)
+print("   [教学注] 若把上面 sleep(0) 删掉(纯算数循环): 3.13+ 实测零损失 ——")  # →    [教学注] 若把上面 sleep(0) 删掉(纯算数循环): 3.13+ 实测零损失 ——
+print("             GIL 切换点不在三步之间; 但临界区有 IO 就是另一回事了,")  # →              GIL 切换点不在三步之间; 但临界区有 IO 就是另一回事了,
+print("             且自由线程版 Python(无 GIL)纯算数也丢 → 锁仍旧必须写")  # →              且自由线程版 Python(无 GIL)纯算数也丢 → 锁仍旧必须写
 
 # ---- 2. Lock/RLock 三件套简述 + 事件(Event) ----
 # 这是什么: Lock —— 互斥锁(一次只放一个线程), RLock —— 可重入锁(同一线程
@@ -83,21 +89,21 @@ ready = threading.Event()
 
 def worker_waiter():
     time.sleep(0.15)                     # 模拟准备(如连数据库)
-    print("   worker 已就绪, 发事件")
+    print("   worker 已就绪, 发事件")  # →    worker 已就绪, 发事件
     ready.set()
 
-print("\n2) Event 同步:")
+print("\n2) Event 同步:")  # → 2) Event 同步:
 t = threading.Thread(target=worker_waiter)
 t.start()
 t.join(0.05)                             # 主线程只等 50ms(还没 ready)—— 看下面
 ready.wait()                             # 阻塞等到 set()
-print("   主线程等到 ready 后才继续(上面 worker 先打印了)")
+print("   主线程等到 ready 后才继续(上面 worker 先打印了)")  # →    主线程等到 ready 后才继续(上面 worker 先打印了)
 
 # ---- 3. Queue: 最省心的线程安全通道 ----
 # 这是什么: queue.Queue —— 线程安全的队列(入队/出队自带锁):
 #           生产-消费模型的标准连接器; get() 阻塞等待数据, put() 排入;
 #           "None(毒药丸)"这个约定值常用来告诉消费者"没了, 收工"。
-print("\n3) 生产者-消费者(Queue):")
+print("\n3) 生产者-消费者(Queue):")  # → 3) 生产者-消费者(Queue):
 q: "queue.Queue[int | None]" = queue.Queue(maxsize=3)
 
 def producer():
@@ -105,15 +111,23 @@ def producer():
         time.sleep(0.05)                 # 模拟慢速产出
         q.put(i)
         print(f"   生产者放入了 {i}")
+        # 每放入一个输出一行; 与消费者的行在同一终端交错, 谁先谁后不固定:
+        #    生产者放入了 1
+        #    生产者放入了 2
+        #    生产者放入了 3
     q.put(None)                          # 毒药丸: 结束信号
 
 def consumer():
     while True:
         item = q.get()
         if item is None:
-            print("   消费者收到结束信号, 收工\n")
+            print("   消费者收到结束信号, 收工\n")  # →    消费者收到结束信号, 收工
             break
         print(f"        消费者拿走了 {item}")
+        # 每取走一个输出一行; 与生产者的行交错, 顺序不固定:
+        #         消费者拿走了 1
+        #         消费者拿走了 2
+        #         消费者拿走了 3
 
 pt = threading.Thread(target=producer)
 ct = threading.Thread(target=consumer)
@@ -126,16 +140,20 @@ ct.join()
 # 这是什么: daemon=True 的后台线程 —— 主线程结束时直接带走(不等待),
 #           用于"后台守护任务"; 非 daemon 线程会拖住解释器直到自己结束;
 #           join() = 主线程等着它跑完(可带秒数超时)。
-print("4) daemon 与 join:")
+print("4) daemon 与 join:")  # → 4) daemon 与 join:
 t = threading.Thread(target=lambda: (time.sleep(2), print("   [daemon] 我刚醒, 主人已经没了…")),
                      daemon=True)
+                     # 这行不会出现在输出里: 主线程结束时 daemon 线程被直接终结:
+                     #    [daemon] 我刚醒, 主人已经没了…
 t.start()
 time.sleep(0.05)
 print("   主线程走了, daemon 线程若没跑完会被直接终结(上面 sleep(2) 的打印看不到 = daemon 生效)")
+# 输出:    主线程走了, daemon 线程若没跑完会被直接终结(上面 sleep(2) 的打印看不到 = daemon 生效)
 t.join(timeout=0.01)                     # 演示 join 超时(不等完就继续)
 
 # ---- 5. 结论: 什么时候用线程 ----
-print("\n5) 结论(教科书级口诀):")
-print("   * IO 密集(网络/文件/爬虫/数据库查询): 线程 → 等待不被浪费, 真加速")
+print("\n5) 结论(教科书级口诀):")  # → 5) 结论(教科书级口诀):
+print("   * IO 密集(网络/文件/爬虫/数据库查询): 线程 → 等待不被浪费, 真加速")  # →    * IO 密集(网络/文件/爬虫/数据库查询): 线程 → 等待不被浪费, 真加速
 print("   * CPU 密集(计算/图像处理/训练): 线程几乎无加速(GIL) → 用 multiprocessing")
-print("   * 单线程脚本: 不需要并发就不引并发(复杂度是债)")
+# 输出:    * CPU 密集(计算/图像处理/训练): 线程几乎无加速(GIL) → 用 multiprocessing
+print("   * 单线程脚本: 不需要并发就不引并发(复杂度是债)")  # →    * 单线程脚本: 不需要并发就不引并发(复杂度是债)

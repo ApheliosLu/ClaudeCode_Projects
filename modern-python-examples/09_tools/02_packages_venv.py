@@ -20,10 +20,14 @@ sys.stdout.reconfigure(line_buffering=True)
 import demo_pkg.greet
 from demo_pkg import greet as short           # from 包 import 模块 等价写法
 
-print("1) 包内模块导入(demo_pkg/ 就在本文件同目录):")
+print("1) 包内模块导入(demo_pkg/ 就在本文件同目录):")  # → 1) 包内模块导入(demo_pkg/ 就在本文件同目录):
 print("   demo_pkg.greet.greet('阿黎'):", demo_pkg.greet.greet("阿黎"))
+# 输出:    demo_pkg.greet.greet('阿黎'): 你好, 阿黎!(来自 demo_pkg.greet)
 print("   short.greet('阿黎')         :", short.greet("阿黎"))
+# 输出:    short.greet('阿黎')         : 你好, 阿黎!(来自 demo_pkg.greet)
 print("   模块文件:", demo_pkg.greet.__file__)
+# 路径随运行位置变化:
+#    模块文件: <运行目录>\09_tools\demo_pkg\greet.py
 
 # ---- 2. 相对导入与 __package__: 为什么"跑单文件"和"当模块跑"不一样 ----
 # 这是什么: 相对导入(from . import x)依赖 __package__(当前所在的包名):
@@ -32,17 +36,17 @@ print("   模块文件:", demo_pkg.greet.__file__)
 #           ② 用 `python -m demo_pkg.greet` 跑时, 解释器把它当包成员,
 #              __package__ = "demo_pkg", 相对导入才合法。
 #           结论: 包内部互相引用用相对导入 + 一律 `python -m 包.模块` 运行。
-print("\n2) __package__ 机制(一句话):")
-print("   当前文件 __package__:", repr(__package__))
-print("   → 直接跑本文件时它是空(顶层脚本); python -m 跑包成员时才有值")
-print("   (demo_pkg 内注释里演示了相对导入写法 —— 需 -m 方式运行才合法)")
+print("\n2) __package__ 机制(一句话):")  # → 2) __package__ 机制(一句话):
+print("   当前文件 __package__:", repr(__package__))  # →    当前文件 __package__: None
+print("   → 直接跑本文件时它是空(顶层脚本); python -m 跑包成员时才有值")  # →    → 直接跑本文件时它是空(顶层脚本); python -m 跑包成员时才有值
+print("   (demo_pkg 内注释里演示了相对导入写法 —— 需 -m 方式运行才合法)")  # →    (demo_pkg 内注释里演示了相对导入写法 —— 需 -m 方式运行才合法)
 
 # ---- 3. 一个"半真"的包内调用(包与普通模块的边界) ----
 # 这是什么: 把"功能函数"留在包里、把"演示逻辑"留在本文件 —— 这是真实项目
 #           的组织法: 库代码不 print, 由调用方(本文件)负责展示。
 from demo_pkg.greet import greet as pkg_greet
-print("\n3) 功能与演示分离:")
-print("   pkg_greet('世界'):", pkg_greet("世界"))
+print("\n3) 功能与演示分离:")  # → 3) 功能与演示分离:
+print("   pkg_greet('世界'):", pkg_greet("世界"))  # →    pkg_greet('世界'): 你好, 世界!(来自 demo_pkg.greet)
 
 # ---- 4. venv 虚拟环境: 是什么 + 标准操作序列 ----
 # 这是什么: venv —— 每个项目一套独立的 site-packages: 项目 A 要 requests 2.x、
@@ -56,10 +60,15 @@ print("   pkg_greet('世界'):", pkg_greet("世界"))
 #                python -m pip install requests
 #   判断当前是否在 venv 里: 看 sys.prefix 是否指向 venv 目录(区别于
 #   sys.base_prefix —— 创建 venv 的"母解释器"路径)。
-print("\n4) venv 状态探测:")
+print("\n4) venv 状态探测:")  # → 4) venv 状态探测:
 print("   sys.prefix       :", sys.prefix)
+# 随本机解释器安装路径:
+#    sys.prefix       : D:\Miniforge3\envs\py314
 print("   sys.base_prefix  :", sys.base_prefix)
+# 随本机解释器安装路径:
+#    sys.base_prefix  : D:\Miniforge3\envs\py314
 in_venv = sys.prefix != sys.base_prefix
-print("   当前在 venv 中?", in_venv)
-print("   → 本文件由系统 python 直接跑(未激活 venv); 若先激活 .venv 再跑,")
+print("   当前在 venv 中?", in_venv)  # →    当前在 venv 中? False
+print("   → 本文件由系统 python 直接跑(未激活 venv); 若先激活 .venv 再跑,")  # →    → 本文件由系统 python 直接跑(未激活 venv); 若先激活 .venv 再跑,
 print("     则 sys.prefix 会指向 .venv 目录, 上方判断变 True —— 装包互不污染")
+# 输出:      则 sys.prefix 会指向 .venv 目录, 上方判断变 True —— 装包互不污染

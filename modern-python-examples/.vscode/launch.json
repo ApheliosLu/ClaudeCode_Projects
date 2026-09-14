@@ -1,0 +1,20 @@
+{
+  // 按 F5 断点调试当前 .py。需要 Python 扩展 (ms-python.python) + debugpy, 本机都已装
+  // 只"想跑一下看输出"的话不用 F5, Ctrl+Shift+B 更省事
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: 调试当前文件",
+      // 新版 Python 扩展的调试器类型是 debugpy (老版本的 "python" 已弃用)
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "cwd": "${fileDirname}",
+      // ★ 关键: 必须用集成终端, 不要用默认的 internalConsole
+      //   原因: 调试控制台里 input() 不可用, 中文输出也容易乱码
+      "console": "integratedTerminal",
+      // true = 只单步进自己的代码, 不跟进标准库内部 (初学时不至于一头扎进 CPython 源码)
+      "justMyCode": true
+    }
+  ]
+}

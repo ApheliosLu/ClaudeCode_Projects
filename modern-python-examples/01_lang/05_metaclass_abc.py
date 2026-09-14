@@ -21,9 +21,9 @@ def speak(self):
 
 Dog = type("Dog", (), {"legs": 4, "speak": speak})    # (名称, 基类元组, 类字典)
 d = Dog()
-print("1) 动态造类 type(...):")
-print("   type(Dog) =", type(Dog), "  ← 类的类型就是 type")
-print(f"   Dog() 实例: {d.speak()} 腿数 = {d.legs}")
+print("1) 动态造类 type(...):")  # → 1) 动态造类 type(...):
+print("   type(Dog) =", type(Dog), "  ← 类的类型就是 type")  # →    type(Dog) = <class 'type'>   ← 类的类型就是 type
+print(f"   Dog() 实例: {d.speak()} 腿数 = {d.legs}")  # →    Dog() 实例: 汪汪! 腿数 = 4
 
 # ---- 2. 自定义元类: 拦截"类的创建"过程 ----
 # 这是什么: 用 metaclass= 指定元类后, class 语句执行时会调用元类的 __new__ 来
@@ -32,6 +32,9 @@ print(f"   Dog() 实例: {d.speak()} 腿数 = {d.legs}")
 class SealMeta(type):
     def __new__(mcs, name, bases, namespace):
         print(f"2) [SealMeta] 正在创建类 {name!r}, 盖个章属性")
+        # 每创建一个经手类各输出一行(共 2 次):
+        # 2) [SealMeta] 正在创建类 'Point', 盖个章属性
+        # 2) [SealMeta] 正在创建类 'Point3D', 盖个章属性
         namespace["sealed"] = True                    # 每个经手类强制加一个属性
         namespace["creator"] = mcs.__name__           # 还能记上"谁造的"
         return super().__new__(mcs, name, bases, namespace)
@@ -43,7 +46,8 @@ class Point3D(Point):                                 # 子类创建照样拦截
     pass
 
 print("   Point.sealed =", Point.sealed, "; Point3D.sealed =", Point3D.sealed)
-print("   子类照样被处理(元类作用于它的所有子类)")
+# 输出:    Point.sealed = True ; Point3D.sealed = True
+print("   子类照样被处理(元类作用于它的所有子类)")  # →    子类照样被处理(元类作用于它的所有子类)
 
 # ---- 3. ABC: 接口约束 —— 不实现抽象方法就不许实例化 ----
 # 这是什么: ABC(Abstract Base Class) + @abstractmethod: 声明"子类必须实现
@@ -64,8 +68,9 @@ class Shape(ABC):
 try:
     Shape()
 except TypeError as e:
-    print("\n3) ABC 约束:")
+    print("\n3) ABC 约束:")  # → 3) ABC 约束:
     print("   直接实例化抽象类报错:", e)
+    # 输出:    直接实例化抽象类报错: Can't instantiate abstract class Shape without an implementation for abstract method 'area'
 
 class Circle(Shape):
     def __init__(self, r):
@@ -75,7 +80,7 @@ class Circle(Shape):
         return 3.14159 * self.r * self.r
 
 c = Circle(10)
-print("   Circle(10).describe() =", c.describe())
+print("   Circle(10).describe() =", c.describe())  # →    Circle(10).describe() = 我的面积是 314.16
 
 # ---- 4. 抽象类方法 / 抽象属性 ----
 class Registry(ABC):
@@ -95,12 +100,14 @@ class Broken(Registry):                               # 没实现 → 不许实�
 try:
     Broken()
 except TypeError as e:
-    print("\n4) 抽象类方法:")
+    print("\n4) 抽象类方法:")  # → 4) 抽象类方法:
     print("   Broken(没实现 display_name) 实例化报错:", e)
-    print("   User.display_name() =", User.display_name())
+    # 输出:    Broken(没实现 display_name) 实例化报错: Can't instantiate abstract class Broken without an implementation for abstract method 'display_name'
+    print("   User.display_name() =", User.display_name())  # →    User.display_name() = 用户
 
 # ---- 5. 元类叠加 ABC 的业界样板: 注册表(看一眼就够了) ----
 # 说明: 框架常把"元类注册 + ABC 约束"组合使用, 这里演示记录模板:
-print("\n5) 元类+ABC 样板(简述): 现实中这行写法属于框架代码, 你只需要认识它")
+print("\n5) 元类+ABC 样板(简述): 现实中这行写法属于框架代码, 你只需要认识它")  # → 5) 元类+ABC 样板(简述): 现实中这行写法属于框架代码, 你只需要认识它
 print("   class Plugin(ABC, metaclass=RegisteredMeta): ...")
-print("   → 约束子类实现约定接口 + 创建时自动注册, 是插件架构的经典骨架")
+# 输出:    class Plugin(ABC, metaclass=RegisteredMeta): ...
+print("   → 约束子类实现约定接口 + 创建时自动注册, 是插件架构的经典骨架")  # →    → 约束子类实现约定接口 + 创建时自动注册, 是插件架构的经典骨架

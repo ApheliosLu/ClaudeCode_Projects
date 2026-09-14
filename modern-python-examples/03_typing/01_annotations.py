@@ -19,10 +19,12 @@ from typing import Optional, Union, Any, Literal, TypeAlias, get_type_hints
 def greet(name: str, times: int = 1) -> str:
     return (f"{name}!" * times)                       # f-string 拼接任何类型都行
 
-print("1) 注解是元数据, 运行时完全不检查:")
-print("   greet('小明') =", greet("小明"))
+print("1) 注解是元数据, 运行时完全不检查:")  # → 1) 注解是元数据, 运行时完全不检查:
+print("   greet('小明') =", greet("小明"))  # →    greet('小明') = 小明!
 print("   greet(123, 2) =", greet(123, 2), "  ← 传 int 也照常运行 —— 注解不被运行时校验")
+# 输出:    greet(123, 2) = 123!123!   ← 传 int 也照常运行 —— 注解不被运行时校验
 print("   函数对象的注解表 __annotations__ =", greet.__annotations__)
+# 输出:    函数对象的注解表 __annotations__ = {'name': <class 'str'>, 'times': <class 'int'>, 'return': <class 'str'>}
 
 # ---- 2. Optional 与 | 联合类型写法 ----
 # 这是什么: Optional[int] —— "可以是 int, 也可以是 None"(3.5 老写法);
@@ -33,9 +35,10 @@ def safe_div(a: int, b: int) -> int | None:
         return None
     return a // b
 
-print("\n2) 可空类型:")
+print("\n2) 可空类型:")  # → 2) 可空类型:
 print("   safe_div(10, 3) =", safe_div(10, 3), "; safe_div(1, 0) =", safe_div(1, 0))
-print("   注解是 int | None: 调用方看到类型就该判断 None 分支")
+# 输出:    safe_div(10, 3) = 3 ; safe_div(1, 0) = None
+print("   注解是 int | None: 调用方看到类型就该判断 None 分支")  # →    注解是 int | None: 调用方看到类型就该判断 None 分支
 
 # ---- 3. Union 与 | ----
 # 这是什么: Union[X, Y] —— "X 或 Y"的联合类型;
@@ -44,8 +47,8 @@ print("   注解是 int | None: 调用方看到类型就该判断 None 分支")
 def display(value: Union[int, str]) -> str:
     return str(value)
 
-print("\n3) Union[int, str]: 声明'可能是数字也可能是字符串', 但运行时不拦 ——")
-print("   传个浮点数进去照样工作:", display(3.14))
+print("\n3) Union[int, str]: 声明'可能是数字也可能是字符串', 但运行时不拦 ——")  # → 3) Union[int, str]: 声明'可能是数字也可能是字符串', 但运行时不拦 ——
+print("   传个浮点数进去照样工作:", display(3.14))  # →    传个浮点数进去照样工作: 3.14
 
 # ---- 4. Literal: 只能取指定字面值 ----
 # 这是什么: Literal["up", "down"] —— 参数只允许取列出的几个字面常量之一;
@@ -53,9 +56,9 @@ print("   传个浮点数进去照样工作:", display(3.14))
 def move(direction: Literal["up", "down"]) -> str:
     return f"向{direction}移动"
 
-print("\n4) Literal:")
-print("   move('up') =", move("up"))
-print("   move('left') 在静态检查器下会报错(本文件运行时跑得过去, 因为注解不校验)")
+print("\n4) Literal:")  # → 4) Literal:
+print("   move('up') =", move("up"))  # →    move('up') = 向up移动
+print("   move('left') 在静态检查器下会报错(本文件运行时跑得过去, 因为注解不校验)")  # →    move('left') 在静态检查器下会报错(本文件运行时跑得过去, 因为注解不校验)
 
 # ---- 5. Any: 类型检查的"免检" ----
 # 这是什么: Any —— "什么类型都行": 告诉检查器"这里别管我"。
@@ -65,6 +68,7 @@ def process(data: Any) -> Any:
     return data
 
 print("\n5) Any: process('anything') 直接返回:", process("anything"), "/", process(3.14))
+# 输出: 5) Any: process('anything') 直接返回: anything / 3.14
 
 # ---- 6. TypeAlias: 给复杂类型起个名字 ----
 # 这是什么: TypeAlias —— 别名注解(3.10 起): 把"很长/很复杂"的类型赋予名字,
@@ -74,15 +78,18 @@ Score: TypeAlias = float             # 显式 TypeAlias 写法(老式)
 user_id: UserId = 1001               # 别名使用: 注解处写 UserId 即可
 
 print("\n6) TypeAlias: user_id 中 UserId 只是 int 的别名 → 运行时零开销(它就是 int):", type(user_id).__name__)
+# 输出: 6) TypeAlias: user_id 中 UserId 只是 int 的别名 → 运行时零开销(它就是 int): int
 
 # ---- 7. 读注解: get_type_hints 解析前向引用 ----
 def future_func(x: "list[int]") -> "int":        # 字符串注解(前向引用: 类型还没定义时先写字符串名)
     return len(x)
 
-print("\n7) 读注解:")
+print("\n7) 读注解:")  # → 7) 读注解:
 print("   原文 __annotations__ 字符串写法:", future_func.__annotations__)
+# 输出:    原文 __annotations__ 字符串写法: {'x': 'list[int]', 'return': 'int'}
 print("   get_type_hints 解析后:", get_type_hints(future_func))
-print("   (前向引用是'类里方法引用自家类'等场景的处理手法)")
+# 输出:    get_type_hints 解析后: {'x': list[int], 'return': <class 'int'>}
+print("   (前向引用是'类里方法引用自家类'等场景的处理手法)")  # →    (前向引用是'类里方法引用自家类'等场景的处理手法)
 
 # ---- 8. 反例: 带参数的泛型别名不能进 isinstance ----
 # 反直觉点 1: list[int] / dict[str, int] 这类"带参数的泛型"只是描述类型的
@@ -90,15 +97,18 @@ print("   (前向引用是'类里方法引用自家类'等场景的处理手法)
 #          直接 TypeError("Subscripted generics ...")。
 # 反直觉点 2(实测): 例外! (3.10 起) int | None 联合类型反而可直接用于
 #          isinstance, 且按成员正确判断 —— 5 年前的老教程会说"一律报错", 新版已改。
-print("\n8) isinstance 与泛型:")
+print("\n8) isinstance 与泛型:")  # → 8) isinstance 与泛型:
 try:
     isinstance([1, 2], list[int])
 except TypeError as e:
     print("   isinstance([1,2], list[int]) 报错:", e)
+    # 输出:    isinstance([1,2], list[int]) 报错: isinstance() argument 2 cannot be a parameterized generic
 print("   isinstance 联合类型(实测合法): None→", isinstance(None, int | None),
       "; 3→", isinstance(3, int | None), "; 's'→", isinstance("s", int | None))
+      # 输出:    isinstance 联合类型(实测合法): None→ True ; 3→ True ; 's'→ False
 
 # ---- 9. reveal_type: 只存在于静态检查器 ----
 # 注释: reveal_type(x) 是 mypy/pyright 的"显示变量类型"命令, 给工具看;
 #       在普通 python 运行时调用会 NameError —— 这里只当不存在注释一句, 不调用。
 print("\n9) reveal_type(x) — 只在 mypy/pyright 里存在; 运行时调用会 NameError, 因此本文件不调用")
+# 输出: 9) reveal_type(x) — 只在 mypy/pyright 里存在; 运行时调用会 NameError, 因此本文件不调用

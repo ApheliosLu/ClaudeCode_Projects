@@ -22,6 +22,7 @@
 ```text
 modern-python-examples/
 ├── README.md
+├── .vscode/         # VSCode 配置: tasks/launch/settings 三件(见"运行方式")
 ├── 01_lang/         # 6 个 —— 语言核心: 数据模型/装饰器/上下文管理器/描述符/元类/闭包
 ├── 02_generator/    # 3 个 —— 迭代协议/生成器/itertools
 ├── 03_typing/       # 3 个 —— 注解/泛型与 Protocol/数据建模(dataclass+TypedDict+Enum)
@@ -33,6 +34,26 @@ modern-python-examples/
 └── 09_tools/        # 3 个 —— unittest 与 mock/包与 venv/调试与性能
     └── demo_pkg/    # 教学脚手架(2 个支持文件, 不属于 34 个交付示例): 02 的包导入演示对象
 ```
+
+## 注释里的"运行输出"约定
+
+每个示例文件的 print 语句旁都写着**实际运行输出**: 行尾 `# → 输出内容` 即该行打印的结果;
+输出较长或一次输出多行时, 改用紧随其后的块注释(`# 输出:` 起头):
+
+```python
+print("1) str(p)  =", str(p))          # 走 __str__  → 1) str(p)  = 点(1, 2)
+
+for word in Words("hello python world"):
+    print("   -", word)
+    # 输出:
+    #    - hello
+    #    - python
+    #    - world
+```
+
+说明: 计时/随机数/时间戳/绝对路径这类每次都会变的值, 取的是本机某次运行的实测值,
+并在注释里标明"随机器浮动"之类; traceback 的行号会随注释增删而变化。
+全部输出在 Python 3.14.3 + `PYTHONUTF8=1` 下采集(见"中文乱码怎么办")。
 
 ## 交付一览 (34 文件: 主题与演示要点)
 
@@ -96,6 +117,11 @@ modern-python-examples/
 
 ## 运行方式
 
+零第三方依赖 -- 不用建虚拟环境, 不用 `pip install`。
+本机实测环境: **Miniforge py314 -> Python 3.14.3** (即 PATH 上的 `python`)。
+
+### 命令行 (任何终端)
+
 ```bash
 # 任意单文件(在 modern-python-examples/ 下, Windows Git Bash)
 python 01_lang/01_data_model.py
@@ -104,9 +130,55 @@ python 01_lang/01_data_model.py
 cd 06_stdlib && for f in *.py; do python "$f"; done
 ```
 
-Windows 管道重定向 stdout 为 GBK 时, 中文输出需 UTF-8 模式:
-`PYTHONUTF8=1 python 文件.py`(直接交互终端运行不需要)。
-零第三方依赖; 示例文件可能写临时目录, 均用完自动清理。
+示例文件可能写临时目录, 均用完自动清理。
+
+### VSCode 里 (配置已就绪)
+
+`.vscode/` 下三个文件已配好, 键位跟 C++ 示例集保持一致:
+
+| 操作 | 效果 |
+| --- | --- |
+| **`Ctrl+Shift+B`** | 运行当前 `.py` (★ 日常只记这一个) |
+| **F5** | 断点调试当前 `.py` |
+| 右上角 **▶** | 运行, 等价于 Ctrl+Shift+B |
+
+> ⚠️ 跟 C++ 一样: 任务作用于**当前焦点所在的编辑器**。焦点停在 `README.md` 上按快捷键,
+> 它会去跑 README.md。按之前先点一下 `.py` 的编辑区。
+
+三个文件各管什么:
+
+| 文件 | 作用 |
+| --- | --- |
+| `tasks.json` | 定义"运行当前文件"任务, 被 `Ctrl+Shift+B` 触发 |
+| `launch.json` | F5 调试配置。`console` 特意设成 `integratedTerminal`, 默认的调试控制台里 `input()` 不可用、中文也容易乱码 |
+| `settings.json` | 锁定解释器为 py314 + 集成终端里带上 `PYTHONUTF8=1` |
+
+### 为什么 Python 不需要 C++ 那么复杂的配置
+
+C++ 那边有三个任务(只编译 / 编译并运行 / 只运行), Python 只有一个, 差别在**构建步骤**:
+
+| | C++ | Python |
+| --- | --- | --- |
+| 源文件是 | 给编译器读的 | 给解释器读的 |
+| 到能跑需要 | ① `g++` 编译链接 -> ② 运行 exe, **两步** | `python f.py` **一步到位** |
+| 中间产物 | `.exe`(得管它在哪、是不是最新的) | 无 |
+| 需要用户拍板的自由参数 | 编译器、`-std=` 版本、`-O` 级别、链接哪些库、输出名……**不写下来 VSCode 猜不到** | 几乎只有"用哪个解释器", 而 Python 扩展已经管了 |
+
+一句话: **`tasks.json` 的存在前提是"从源码到可执行有需要用户拍板的参数"。** C++ 有, 所以必须有;
+Python 没有 -- `python 文件名` 已经短到不需要再包一层。同理, VSCode 的 Python 扩展能自动提供
+运行按钮和 `Python File` 调试配置, 而 C/C++ 扩展给不了(它没法猜你怎么编译)。
+
+### 中文乱码怎么办
+
+只有一种情况会乱码: **输出被重定向或走管道**时, Python 检测到 stdout 不是真控制台,
+会退回系统区域编码 `cp936`(GBK), 中文就糊了。
+
+| 场景 | 结果 |
+| --- | --- |
+| VSCode 集成终端里手动 `python f.py` | ✅ 真控制台, 走 UTF-8 通道, 正常显示 |
+| `python f.py > out.txt`、`\| head`、被别的工具抓输出 | ⚠️ 走 GBK, 乱码 |
+
+遇到就加环境变量: `PYTHONUTF8=1 python 文件.py`(上面 `settings.json` 里已经给集成终端配好了)。
 
 ## 对照速查: 3.12 → 3.14 关键差异 (本机 3.14.3 实测)
 

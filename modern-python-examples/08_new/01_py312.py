@@ -18,8 +18,8 @@ assert sys.version_info >= (3, 12), "本文件演示 3.12+ 特性, 请用 3.12 �
 # 这是什么: type X = 类型 —— 3.12 起的类型别名语句: 给长类型起短名。
 #           (3.12 及之前: 只能 TypeAlias 注解或直接复制长类型, 无专用语法。)
 type IntList = list[int]                      # 别名: 之后 IntList ≡ list[int]
-print("1) type 语句别名与泛型新语法:")
-print("   type IntList = list[int] → 别名即类型本身:", IntList)
+print("1) type 语句别名与泛型新语法:")  # → 1) type 语句别名与泛型新语法:
+print("   type IntList = list[int] → 别名即类型本身:", IntList)  # →    type IntList = list[int] → 别名即类型本身: IntList
 
 # 这是什么: 函数泛型 def f[T](x: T) -> T —— 3.12 起方括号内联声明类型变量。
 #           (3.12 及之前: from typing import TypeVar; T = TypeVar("T") 两行
@@ -32,9 +32,10 @@ class Box[T]:                                 # 3.12 泛型类: 类级类型变�
         self.value = value
 
 print("   first([10, 20, 30]) =", first([10, 20, 30]), type(first([10, 20, 30])).__name__)
-print("   first(['a'])        =", first(["a"]), type(first(["a"])).__name__)
+# 输出:    first([10, 20, 30]) = 10 int
+print("   first(['a'])        =", first(["a"]), type(first(["a"])).__name__)  # →    first(['a'])        = a str
 b = Box("hello")
-print("   Box[str] 实例:", b.value, "   # 无需运行时类型检查, 语法层面标注")
+print("   Box[str] 实例:", b.value, "   # 无需运行时类型检查, 语法层面标注")  # →    Box[str] 实例: hello    # 无需运行时类型检查, 语法层面标注
 
 # ---- 2. @override(typing): 声明"我在覆写父类" ----
 from typing import override
@@ -50,18 +51,21 @@ class Child(Base):
     def greet(self) -> str:
         return "Child 覆写: " + super().greet()
 
-print("\n2) @override 覆写标注:")
-print("   Child().greet():", Child().greet())
-print("   (运行时无校验 —— 若父类没这方法, 只有静态检查器会报, 见注释)")
+print("\n2) @override 覆写标注:")  # → 2) @override 覆写标注:
+print("   Child().greet():", Child().greet())  # →    Child().greet(): Child 覆写: Base 你好
+print("   (运行时无校验 —— 若父类没这方法, 只有静态检查器会报, 见注释)")  # →    (运行时无校验 —— 若父类没这方法, 只有静态检查器会报, 见注释)
 
 # ---- 3. PEP 701 多行/同引号 f-string(完整演示见 06_stdlib/06) ----
 print("\n3) PEP 701 快速回顾(详见 06_stdlib/06_strings_re.py 第 3 节):")
+# 输出: 3) PEP 701 快速回顾(详见 06_stdlib/06_strings_re.py 第 3 节):
 d = {"a": 1}
-print("   同引号嵌套 f\"{d[\"a\"]}\":", f"{d["a"]}")   # 3.12 前是 SyntaxError
+print("   同引号嵌套 f\"{d[\"a\"]}\":", f"{d["a"]}")   # 3.12 前是 SyntaxError  →    同引号嵌套 f"{d["a"]}": 1
 
 # ---- 4. pathlib.Path.walk(对照 os.walk)——完整使用见 06_stdlib/01 ----
 print("\n4) Path.walk(3.12+, 使用细节见 06_stdlib/01_pathlib.py):")
+# 输出: 4) Path.walk(3.12+, 使用细节见 06_stdlib/01_pathlib.py):
 print("   在 3.12 前遍历目录只能 os.walk(字符串); 3.12 起 Path 自带 .walk():")
+# 输出:    在 3.12 前遍历目录只能 os.walk(字符串); 3.12 起 Path 自带 .walk():
 import tempfile
 from pathlib import Path
 with tempfile.TemporaryDirectory() as tmp:
@@ -69,8 +73,8 @@ with tempfile.TemporaryDirectory() as tmp:
     (root / "src" / "mod").mkdir(parents=True)
     (root / "src" / "app.py").write_text("", encoding="utf-8")
     dirs = [d.relative_to(root) for d, _, _ in root.walk()]
-    print("   遍历到的目录:", [str(x) for x in dirs])
-print("   → 返回的是 Path 对象(旧 os.walk 只给字符串), 可直接继续链式调用")
+    print("   遍历到的目录:", [str(x) for x in dirs])  # →    遍历到的目录: ['.', 'src', 'src\\mod']
+print("   → 返回的是 Path 对象(旧 os.walk 只给字符串), 可直接继续链式调用")  # →    → 返回的是 Path 对象(旧 os.walk 只给字符串), 可直接继续链式调用
 
 # ---- 5. match-case 语句(PEP 634, 3.10 新增) ----
 # 这是什么: match 值: case 模式: —— 结构模式匹配(3.10 新增, 3.12 完全可用):
@@ -87,6 +91,12 @@ def route(cmd: str) -> str:
         case _:                                # 兜底: 空输入等
             return "空命令"
 
-print("\n5) match-case 结构模式匹配(3.10 新增):")
+print("\n5) match-case 结构模式匹配(3.10 新增):")  # → 5) match-case 结构模式匹配(3.10 新增):
 for cmd in ["open notes.md", "quit", "exit", "delete a b", ""]:
     print(f"   {cmd!r:16} → {route(cmd)}")
+    # 循环 5 次, 每条命令各输出一行:
+    #    'open notes.md'  → 打开文件 notes.md
+    #    'quit'           → 再见!
+    #    'exit'           → 再见!
+    #    'delete a b'     → 未知命令 delete(剩余参数: ['a', 'b'])
+    #    ''               → 空命令

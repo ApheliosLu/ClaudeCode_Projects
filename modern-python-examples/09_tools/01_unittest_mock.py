@@ -90,9 +90,17 @@ class TestSendAlert(unittest.TestCase):
             self.assertEqual(fetch_price(7), 42.5)
             fake_open.assert_called_once()          # 确认"请求确实被发出"过一次
             print("   [patch 生效] fetch_price 没发真实请求, 拿到替身数据 42.5")
+            # 输出: ....   [patch 生效] fetch_price 没发真实请求, 拿到替身数据 42.5
 
 
 # 这是什么: unittest.main() —— 命令行入口: 运行本文件即自动发现并跑全部
 #           用例, 汇总输出. / OK / FAILED。等价命令 python -m unittest 文件名。
 if __name__ == "__main__":
     unittest.main()
+    # 运行本文件的完整输出(unittest 汇总走 stderr): 6 个点 = 6 条用例通过; 用时随机器浮动:
+    # ....   [patch 生效] fetch_price 没发真实请求, 拿到替身数据 42.5
+    # ..
+    # ----------------------------------------------------------------------
+    # Ran 6 tests in 0.012s
+    # 
+    # OK

@@ -16,11 +16,11 @@ from collections import Counter, ChainMap, defaultdict, deque, namedtuple
 #           统计时不用手写 if 判断"键在不在"。c["缺失键"] 返回 0 而不是报错。
 votes = ["番茄", "土豆", "番茄", "鸡蛋", "番茄", "土豆", "番茄"]
 c = Counter(votes)
-print("1) Counter 投票统计:")
-print("   全部票数   :", dict(c))
-print("   番茄几票   :", c["番茄"])
-print("   没出现候选 :", c["辣椒"], "  # 缺省返回 0, 不报 KeyError")
-print("   most_common(2) 前二:", c.most_common(2))
+print("1) Counter 投票统计:")  # → 1) Counter 投票统计:
+print("   全部票数   :", dict(c))  # →    全部票数   : {'番茄': 4, '土豆': 2, '鸡蛋': 1}
+print("   番茄几票   :", c["番茄"])  # →    番茄几票   : 4
+print("   没出现候选 :", c["辣椒"], "  # 缺省返回 0, 不报 KeyError")  # →    没出现候选 : 0   # 缺省返回 0, 不报 KeyError
+print("   most_common(2) 前二:", c.most_common(2))  # →    most_common(2) 前二: [('番茄', 4), ('土豆', 2)]
 # 这是什么: c.most_common(n) —— 按次数从高到低取前 n 个 (元素, 次数) 对,
 #           榜单/热词统计一行搞定(等价旧写法: sorted(c.items(), key=lambda x: -x[1])[:n])。
 
@@ -31,14 +31,15 @@ print("   most_common(2) 前二:", c.most_common(2))
 word_groups = defaultdict(list)                # 缺键自动变空 list
 for w in ["apple", "banana", "avocado", "cherry"]:
     word_groups[w[0]].append(w)               # 按首字母分组, 不用 if w[0] in d
-print("\n2) defaultdict 按首字母分组:")
+print("\n2) defaultdict 按首字母分组:")  # → 2) defaultdict 按首字母分组:
 print("   dict(word_groups):", dict(word_groups))
-print("   'c' 组:", word_groups["c"])
+# 输出:    dict(word_groups): {'a': ['apple', 'avocado'], 'b': ['banana'], 'c': ['cherry']}
+print("   'c' 组:", word_groups["c"])  # →    'c' 组: ['cherry']
 
 visit_count = defaultdict(int)                # 缺键自动从 0 开始
 for page in ["/", "/cart", "/", "/login"]:
     visit_count[page] += 1                    # 直接 +=, 首次访问自动是 0+1
-print("   页面访问计数:", dict(visit_count))
+print("   页面访问计数:", dict(visit_count))  # →    页面访问计数: {'/': 2, '/cart': 1, '/login': 1}
 
 # ---- 3. deque: 双端都能 O(1) 进出的队列 ----
 # 这是什么: deque —— "双端队列": 头部和尾部都能高效(popleft/appendleft)。
@@ -48,12 +49,12 @@ print("   页面访问计数:", dict(visit_count))
 dq = deque(maxlen=5)                          # 环形缓冲: 最多留 5 个
 for i in range(1, 8):                         # 塞 7 个, 前两个被自动挤掉
     dq.append(i)
-print("\n3) deque(maxlen=5) 环形缓冲:")
-print("   塞入 1..7 后:", list(dq), "  # 1,2 被自动挤出")
-print("   右端 pop :", dq.pop())
-print("   左端 popleft:", dq.popleft())
+print("\n3) deque(maxlen=5) 环形缓冲:")  # → 3) deque(maxlen=5) 环形缓冲:
+print("   塞入 1..7 后:", list(dq), "  # 1,2 被自动挤出")  # →    塞入 1..7 后: [3, 4, 5, 6, 7]   # 1,2 被自动挤出
+print("   右端 pop :", dq.pop())  # →    右端 pop : 7
+print("   左端 popleft:", dq.popleft())  # →    左端 popleft: 3
 dq.appendleft(0)
-print("   appendleft(0) 后:", list(dq))
+print("   appendleft(0) 后:", list(dq))  # →    appendleft(0) 后: [0, 4, 5, 6]
 
 # ---- 4. namedtuple: 元组带上字段名 ----
 # 这是什么: namedtuple —— "有名字的元组": 还是元组(不可变、可解包、省内存),
@@ -61,16 +62,18 @@ print("   appendleft(0) 后:", list(dq))
 #           (不需要方法时)用它, 比写 class 短; 想加方法就上 dataclass(见 03_typing)。
 Point = namedtuple("Point", ["x", "y"])       # 第一个参数是类型名
 p = Point(3, 4)
-print("\n4) namedtuple:")
-print("   p =", p)
-print("   p.x + p.y =", p.x + p.y, "   # 字段访问; 也还能 p[0] 按下标")
+print("\n4) namedtuple:")  # → 4) namedtuple:
+print("   p =", p)  # →    p = Point(x=3, y=4)
+print("   p.x + p.y =", p.x + p.y, "   # 字段访问; 也还能 p[0] 按下标")  # →    p.x + p.y = 7    # 字段访问; 也还能 p[0] 按下标
 print("   x, y = p 解包:", end=" ")
+# end=" " 不换行: 本行与下面 print 拼成同一行:
+#    x, y = p 解包: x=3, y=4
 x, y = p
-print(f"x={x}, y={y}")
+print(f"x={x}, y={y}")  # → x=3, y=4
 try:
     p.x = 99
 except AttributeError as e:
-    print("   想改 p.x 报错:", e, "  # 与元组一样不可变")
+    print("   想改 p.x 报错:", e, "  # 与元组一样不可变")  # →    想改 p.x 报错: can't set attribute   # 与元组一样不可变
 
 # ---- 5. ChainMap: 多份 dict 的"叠加视图", 逐层查找 ----
 # 这是什么: ChainMap(d1, d2, ...) —— 把多个 dict 合成一个"查找链":
@@ -81,9 +84,12 @@ except AttributeError as e:
 defaults = {"theme": "light", "lang": "zh", "page_size": 10}
 user_cfg = {"theme": "dark"}                  # 用户只改了自己要改的键
 cfg = ChainMap(user_cfg, defaults)            # 查键顺序: user_cfg 优先
-print("\n5) ChainMap 配置覆盖(用户设置 → 默认值):")
-print("   theme     :", cfg["theme"], "   # 命中 user_cfg")
+print("\n5) ChainMap 配置覆盖(用户设置 → 默认值):")  # → 5) ChainMap 配置覆盖(用户设置 → 默认值):
+print("   theme     :", cfg["theme"], "   # 命中 user_cfg")  # →    theme     : dark    # 命中 user_cfg
 print("   lang      :", cfg["lang"], "    # user_cfg 没有, 落到 defaults")
+# 输出:    lang      : zh     # user_cfg 没有, 落到 defaults
 user_cfg["lang"] = "en"                       # 改原 dict, 视图即时生效
 print("   user_cfg['lang']='en' 后 cfg['lang']:", cfg["lang"], "  # 视图跟着变(零复制)")
+# 输出:    user_cfg['lang']='en' 后 cfg['lang']: en   # 视图跟着变(零复制)
 print("   .maps 可看查找链:", cfg.maps)
+# 输出:    .maps 可看查找链: [{'theme': 'dark', 'lang': 'en'}, {'theme': 'light', 'lang': 'zh', 'page_size': 10}]

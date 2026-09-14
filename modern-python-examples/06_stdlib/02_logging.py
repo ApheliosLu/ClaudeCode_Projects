@@ -26,7 +26,7 @@ sys.stdout.reconfigure(line_buffering=True)
 # 这是什么: logging.basicConfig() —— 一条命令配好 root logger 的级别与格式
 #           (只在第一次调用生效, 之后调用被忽略)。format 里的 %(asctime)s/
 #           %(levelname)s/%(name)s/%(message)s 是占位符, 每行日志会按它拼。
-print("1) 五种级别(DEBUG → CRITICAL), basicConfig 配置后全部可见:")
+print("1) 五种级别(DEBUG → CRITICAL), basicConfig 配置后全部可见:")  # → 1) 五种级别(DEBUG → CRITICAL), basicConfig 配置后全部可见:
 logging.basicConfig(
     level=logging.DEBUG,                       # 门槛: DEBUG 及更严重都放行
     format="%(asctime)s %(levelname)-8s %(name)s | %(message)s",
@@ -34,11 +34,13 @@ logging.basicConfig(
     stream=sys.stdout,                         # 与 print 同流, 演示顺序直观
 )
 logging.debug("查变量细节用 DEBUG")
-logging.info("正常流程节点用 INFO")
-logging.warning("能跑但可疑用 WARNING")
-logging.error("出错但程序没崩用 ERROR")
-logging.critical("程序要完蛋了用 CRITICAL")
-print("   ↑ 级别从左到右递增; setLevel 越低放行越多")
+# 时间戳为运行时时钟:
+# 16:39:51 DEBUG    root | 查变量细节用 DEBUG
+logging.info("正常流程节点用 INFO")  # → 16:39:51 INFO     root | 正常流程节点用 INFO
+logging.warning("能跑但可疑用 WARNING")  # → 16:39:51 WARNING  root | 能跑但可疑用 WARNING
+logging.error("出错但程序没崩用 ERROR")  # → 16:39:51 ERROR    root | 出错但程序没崩用 ERROR
+logging.critical("程序要完蛋了用 CRITICAL")  # → 16:39:51 CRITICAL root | 程序要完蛋了用 CRITICAL
+print("   ↑ 级别从左到右递增; setLevel 越低放行越多")  # →    ↑ 级别从左到右递增; setLevel 越低放行越多
 
 # ---- 2. getLogger(名字): 按模块分类, 各自独立设门槛 ----
 # 这是什么: logging.getLogger("模块.部位") —— 拿一个"带名字的 logger"。
@@ -48,17 +50,20 @@ print("   ↑ 级别从左到右递增; setLevel 越低放行越多")
 cart = logging.getLogger("shop.cart")         # 分类 logger, 无自己的 handler
 cart.setLevel(logging.WARNING)                # 只放行 WARNING 及以上
 order = logging.getLogger("shop.order")       # 继承全局 DEBUG 门槛
-print("\n2) 按模块分类与独立级别: cart 设 WARNING 门槛, order 保持 DEBUG")
+print("\n2) 按模块分类与独立级别: cart 设 WARNING 门槛, order 保持 DEBUG")  # → 2) 按模块分类与独立级别: cart 设 WARNING 门槛, order 保持 DEBUG
 cart.debug("cart 的 DEBUG 被门槛挡掉, 不显示")
-cart.warning("cart 出 WARNING, 可见")
-order.debug("order 的 DEBUG, 因全局 DEBUG 门槛而可见")
+# 被 cart 的 WARNING 门槛挡掉, 本行没有输出:
+# 
+cart.warning("cart 出 WARNING, 可见")  # → 16:39:51 WARNING  shop.cart | cart 出 WARNING, 可见
+order.debug("order 的 DEBUG, 因全局 DEBUG 门槛而可见")  # → 16:39:51 DEBUG    shop.order | order 的 DEBUG, 因全局 DEBUG 门槛而可见
 print("   对比上面 print 里的日志: name 列显示 shop.cart / shop.order")
+# 输出:    对比上面 print 里的日志: name 列显示 shop.cart / shop.order
 
 # ---- 3. 落文件 + 自动轮转: RotatingFileHandler ----
 # 这是什么: RotatingFileHandler —— 文件一超过 maxBytes 字节就"滚动"成
 #           .1/.2/.3 备份并开新文件, 只留 backupCount 份, 防止日志无限膨胀
 #           (生产上 24 小时在线的服务, 不轮转会把磁盘写满)。
-print("\n3) 日志写文件 + 超过 maxBytes 自动轮转备份:")
+print("\n3) 日志写文件 + 超过 maxBytes 自动轮转备份:")  # → 3) 日志写文件 + 超过 maxBytes 自动轮转备份:
 with tempfile.TemporaryDirectory(prefix="log_demo_") as tmp:
     log_path = Path(tmp) / "app.log"
     rot = logging.getLogger("rotate.demo")
@@ -73,27 +78,43 @@ with tempfile.TemporaryDirectory(prefix="log_demo_") as tmp:
         rot.info(f"第 {i} 条业务日志: 用户下单 #{i}")
 
     files = sorted(Path(tmp).iterdir())
-    print("   临时目录里生成的文件:")
+    print("   临时目录里生成的文件:")  # →    临时目录里生成的文件:
     for f in files:
         size = f.stat().st_size
         print(f"   {f.name:<12} {size} 字节")
+        # 轮转后临时目录里的 4 个文件各输出一行:
+        #    app.log      210 字节
+        #    app.log.1    210 字节
+        #    app.log.2    210 字节
+        #    app.log.3    200 字节
     print(f"   → 现役 app.log + {len(files) - 1} 个备份(backupCount=3 只留 3 份)")
-    print("   备份 .1 的内容头两行:")
+    # 输出:    → 现役 app.log + 3 个备份(backupCount=3 只留 3 份)
+    print("   备份 .1 的内容头两行:")  # →    备份 .1 的内容头两行:
     backup = Path(tmp) / "app.log.1"
     for line in backup.read_text(encoding="utf-8").splitlines()[:2]:
         print("   |", line)
+        # 备份文件头两行各输出一行:
+        #    | 第 15 条业务日志: 用户下单 #15
+        #    | 第 16 条业务日志: 用户下单 #16
     fh.close()                                      # 关 handler 释放文件句柄
     rot.removeHandler(fh)
 # 退出 with: 文件已释放, 临时目录自动清理
-print("   临时目录已自动清理 ✔")
+print("   临时目录已自动清理 ✔")  # →    临时目录已自动清理 ✔
 
 # ---- 4. logging.exception: 在 except 里记完整调用栈 ----
 # 这是什么: logger.exception("说明") —— 只能在 except 块里用: 等价于
 #           logger.error(..., exc_info=True), 自动把当前异常的 traceback
 #           完整写进日志 —— 线上排错最需要的就是"哪一行炸的"。
-print("\n4) except 里用 exception 记下完整栈:")
+print("\n4) except 里用 exception 记下完整栈:")  # → 4) except 里用 exception 记下完整栈:
 try:
     total = 10 / 0
 except ZeroDivisionError:
     logging.exception("计算平均价失败(故意的)")     # 输出 ERROR 行 + traceback
-print("   ↑ traceback 完整记录了异常发生位置(运维排错第一现场)")
+    # ERROR 行 + 完整 traceback(文件路径与行号随本文件位置/注释行数变化):
+    # 16:39:51 ERROR    root | 计算平均价失败(故意的)
+    # Traceback (most recent call last):
+    #   File "<脚本路径>", line 96, in <module>
+    #     total = 10 / 0
+    #             ~~~^~~
+    # ZeroDivisionError: division by zero
+print("   ↑ traceback 完整记录了异常发生位置(运维排错第一现场)")  # →    ↑ traceback 完整记录了异常发生位置(运维排错第一现场)

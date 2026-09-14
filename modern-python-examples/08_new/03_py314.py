@@ -25,13 +25,16 @@ sys.stdout.reconfigure(line_buffering=True)
 #           或手写占位符模板再 replace, 拿不到结构化的插值清单。)
 name, age = "阿黎", 23
 tpl = t"用户 {name} 年龄 {age}"
-print("1) t-strings(PEP 750): 结果是 Template 对象")
-print("   tpl 类型:", type(tpl).__name__)
-print("   文本骨架 strings  :", tpl.strings)
+print("1) t-strings(PEP 750): 结果是 Template 对象")  # → 1) t-strings(PEP 750): 结果是 Template 对象
+print("   tpl 类型:", type(tpl).__name__)  # →    tpl 类型: Template
+print("   文本骨架 strings  :", tpl.strings)  # →    文本骨架 strings  : ('用户 ', ' 年龄 ', '')
 print("   插值清单(表达式+值):")
 for iv in tpl.interpolations:
     print(f"     {iv.expression!r} → {iv.value!r}")
-print("   .values 直接取值:", tpl.values)
+    # 两个插值各输出一行:
+    #      'name' → '阿黎'
+    #      'age' → 23
+print("   .values 直接取值:", tpl.values)  # →    .values 直接取值: ('阿黎', 23)
 # 实测注: 3.14.3 的 templatelib 尚在早期 —— str(tpl) 还未特殊化为合并文本
 # (打印出来是构造样式)。自行渲染 = 骨架与值交错拼起来:
 rendered = ""
@@ -39,7 +42,7 @@ for i, s in enumerate(tpl.strings):
     rendered += s
     if i < len(tpl.values):
         rendered += str(tpl.values[i])
-print("   手写渲染结果:", rendered)
+print("   手写渲染结果:", rendered)  # →    手写渲染结果: 用户 阿黎 年龄 23
 
 # ---- 2. PEP 649: 注解默认惰性求值(类前向引用不再需要 __future__) ----
 # 这是什么: PEP 649 —— 3.14 起注解求值改为"访问 __annotations__ 时才算":
@@ -56,22 +59,23 @@ class Later:                       # 类定义在函数之后
     def __init__(self, v):
         self.v = v
 
-print("\n2) PEP 649 惰性注解(类后置定义直接可用):")
+print("\n2) PEP 649 惰性注解(类后置定义直接可用):")  # → 2) PEP 649 惰性注解(类后置定义直接可用):
 ann = build.__annotations__
 print("   build.__annotations__:", ann)
+# 输出:    build.__annotations__: {'x': <class '__main__.Later'>, 'return': <class '__main__.Later'>}
 print("   'return' 是真实类型对象:", isinstance(ann["return"], type),
-      "→", ann["return"].__name__)
-print("   (PEP 563 字符串化方案下这里是字符串 'Later', 见注释对照)")
+      "→", ann["return"].__name__)  # →    'return' 是真实类型对象: True → Later
+print("   (PEP 563 字符串化方案下这里是字符串 'Later', 见注释对照)")  # →    (PEP 563 字符串化方案下这里是字符串 'Later', 见注释对照)
 
 # ---- 3. PEP 758: except 不用括号也能列多类型 ----
 # 这是什么: PEP 758 —— 3.14 恢复了"裸逗号"写法: except A, B: 与
 #           except (A, B): 完全等价(早古 Python 曾有, 后被移除)。
 #           新代码照旧写括号版也行 —— 只是语法枷锁少了一道。
-print("\n3) PEP 758: except A, B(无括号, 3.14 实测可用):")
+print("\n3) PEP 758: except A, B(无括号, 3.14 实测可用):")  # → 3) PEP 758: except A, B(无括号, 3.14 实测可用):
 try:
     int("abc")
 except ValueError, TypeError:                 # 无括号多类型 —— 3.14 起合法
-    print("   捕获: except ValueError, TypeError 生效(与括号版等价)")
+    print("   捕获: except ValueError, TypeError 生效(与括号版等价)")  # →    捕获: except ValueError, TypeError 生效(与括号版等价)
 
 # ---- 4. PEP 765: finally 里 return/break/continue 不再被默许 ----
 # 这是什么: PEP 765 —— finally 块里的 return/break/continue 会悄悄吞掉
@@ -87,6 +91,11 @@ def f_bad():
     finally:
         return 2                      # 吞掉上面的 return 1(3.14 起警告)
 
-print("\n4) PEP 765: finally 内 return 已被警告(见文件顶部第一条输出)")
-print("   若调用 f_bad() 会得到", 2, "而不是 1 —— 控制流被 finally 劫持的现场")
+# 编译期 SyntaxWarning: 这是运行本文件的第一条输出, 排在所有 print 之前(路径与行号随本文件位置/注释行数变化):
+# <运行目录>\08_new\03_py314.py:88: SyntaxWarning: 'return' in a 'finally' block
+#   return 2                      # 吞掉上面的 return 1(3.14 起警告)
+
+print("\n4) PEP 765: finally 内 return 已被警告(见文件顶部第一条输出)")  # → 4) PEP 765: finally 内 return 已被警告(见文件顶部第一条输出)
+print("   若调用 f_bad() 会得到", 2, "而不是 1 —— 控制流被 finally 劫持的现场")  # →    若调用 f_bad() 会得到 2 而不是 1 —— 控制流被 finally 劫持的现场
 print("   正确写法: 别在 finally 里 return; 清理代码用 try/finally 不加 return")
+# 输出:    正确写法: 别在 finally 里 return; 清理代码用 try/finally 不加 return

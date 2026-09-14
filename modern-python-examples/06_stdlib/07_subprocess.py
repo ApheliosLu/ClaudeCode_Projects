@@ -22,22 +22,24 @@ PY = sys.executable
 #           把 stdout/stderr 收进内存; text=True 按文本解码(不设则返回字节)。
 #           返回值是 CompletedProcess: .returncode/.stdout/.stderr。
 r = subprocess.run([PY, "-c", "print(42)"], capture_output=True, text=True)
-print("1) run 捕获输出:")
-print("   returncode:", r.returncode, "  # 0 = 成功")
-print("   stdout    :", repr(r.stdout), " # print 自带换行")
-print("   去除换行  :", r.stdout.strip())
+print("1) run 捕获输出:")  # → 1) run 捕获输出:
+print("   returncode:", r.returncode, "  # 0 = 成功")  # →    returncode: 0   # 0 = 成功
+print("   stdout    :", repr(r.stdout), " # print 自带换行")  # →    stdout    : '42\n'  # print 自带换行
+print("   去除换行  :", r.stdout.strip())  # →    去除换行  : 42
 
 # ---- 2. 失败的命令: 看 stderr 与退出码; check=True 直接抛异常 ----
-print("\n2) 命令失败时的两种处理:")
+print("\n2) 命令失败时的两种处理:")  # → 2) 命令失败时的两种处理:
 bad = subprocess.run([PY, "-c", "1/0"], capture_output=True, text=True)
-print("   不抛异常跑完: returncode =", bad.returncode)
+print("   不抛异常跑完: returncode =", bad.returncode)  # →    不抛异常跑完: returncode = 1
 print("   stderr 尾行 :", bad.stderr.strip().splitlines()[-1])
+# 输出:    stderr 尾行 : ZeroDivisionError: division by zero
 # 这是什么: check=True —— run 的参数: 子进程退出码非 0 就直接抛
 #           CalledProcessError(脚本默认"失败就该让上层知道", 不会悄悄继续)。
 try:
     subprocess.run([PY, "-c", "1/0"], capture_output=True, text=True, check=True)
 except subprocess.CalledProcessError as e:
     print("   check=True: 捕获 CalledProcessError, returncode =", e.returncode)
+    # 输出:    check=True: 捕获 CalledProcessError, returncode = 1
 
 # ---- 3. Popen + communicate: 手动接管, 边跑边喂输入 ----
 # 这是什么: subprocess.Popen —— run 的"低配手动档": run 等于 Popen +
@@ -50,8 +52,9 @@ child = subprocess.Popen(
     stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True,
 )
 out, err = child.communicate(input="阿黎\n")   # 喂一行输入, 等结束
-print("\n3) Popen + communicate 喂输入:")
+print("\n3) Popen + communicate 喂输入:")  # → 3) Popen + communicate 喂输入:
 print("   子进程输出:", out.strip(), "  # input() 的提示语不换行, 故与下一行拼接")
+# 输出:    子进程输出: 名字? 你好, 阿黎   # input() 的提示语不换行, 故与下一行拼接
 
 # ---- 4. env: 给子进程注入配置(项目配置传递的标准姿势) ----
 # 这是什么: env={...} —— 指定子进程的环境变量。注意: 不传则继承父进程环境;
@@ -65,8 +68,8 @@ r = subprocess.run(
      "import os; print('模式 =', os.environ.get('APP_MODE', '(没注入)'))"],
     capture_output=True, text=True, encoding="utf-8", env=child_env,
 )
-print("\n4) env 注入子进程:")
-print("   APP_MODE 到达子进程:", r.stdout.strip())
+print("\n4) env 注入子进程:")  # → 4) env 注入子进程:
+print("   APP_MODE 到达子进程:", r.stdout.strip())  # →    APP_MODE 到达子进程: 模式 = production
 
 # ---- 5. 安全红线: shell=True 与 os.system ----
 # 这是什么: shell=True —— 让系统 shell 去解释命令字符串(可写管道/通配符/&&),
@@ -76,7 +79,7 @@ print("   APP_MODE 到达子进程:", r.stdout.strip())
 # 对照: os.system("命令") 就是"隐式 shell=True" + 输出全丢, 两宗罪占全,
 #       新代码一律 subprocess。
 user_input = "demo; echo 这里被 shell 执行了!"      # 恶意输入长这样
-print("\n5) shell 注入红线(演示, 不真执行):")
-print("   列表形式 [PY, '-c', user_input] → 当作纯参数, 无注入风险 ✔")
-print("   shell=True 时 ';' 会被当作命令分隔符 → 注入 ✗ (仅注释说明, 不演示)")
-print("   os.system 旧写法 = 隐式 shell + 拿不到输出, 弃用")
+print("\n5) shell 注入红线(演示, 不真执行):")  # → 5) shell 注入红线(演示, 不真执行):
+print("   列表形式 [PY, '-c', user_input] → 当作纯参数, 无注入风险 ✔")  # →    列表形式 [PY, '-c', user_input] → 当作纯参数, 无注入风险 ✔
+print("   shell=True 时 ';' 会被当作命令分隔符 → 注入 ✗ (仅注释说明, 不演示)")  # →    shell=True 时 ';' 会被当作命令分隔符 → 注入 ✗ (仅注释说明, 不演示)
+print("   os.system 旧写法 = 隐式 shell + 拿不到输出, 弃用")  # →    os.system 旧写法 = 隐式 shell + 拿不到输出, 弃用

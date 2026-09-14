@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pwd -W)",
+      "Bash(sort -k2)",
+      "Bash(python -c ' *)"
+    ]
+  }
+}

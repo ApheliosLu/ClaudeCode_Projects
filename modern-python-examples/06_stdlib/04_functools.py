@@ -19,10 +19,13 @@ def make_request(method, url, timeout):
     return f"[{method}] {url} (超时 {timeout}s)"
 
 get_json = partial(make_request, "GET", timeout=5)   # 固定 method 和 timeout
-print("1) partial 固定参数:")
+print("1) partial 固定参数:")  # → 1) partial 固定参数:
 print("   get_json('/api/users')  →", get_json("/api/users"))
+# 输出:    get_json('/api/users')  → [GET] /api/users (超时 5s)
 print("   get_json('/api/orders') →", get_json("/api/orders"))
+# 输出:    get_json('/api/orders') → [GET] /api/orders (超时 5s)
 print("   make_request 原函数仍在:", make_request("POST", "/api/x", 10))
+# 输出:    make_request 原函数仍在: [POST] /api/x (超时 10s)
 
 # ---- 2. lru_cache / cache: 记忆化 —— 同样的输入只算一次 ----
 # 这是什么: @cache —— 装饰纯函数后, 返回值按参数缓存: 相同的参数再调用
@@ -40,10 +43,15 @@ def fib_cached(n):                      # 记忆化版: 每个 n 只真算一次
 N = 37
 t0 = time.perf_counter(); r_plain = fib_plain(N); t1 = time.perf_counter()
 t2 = time.perf_counter(); r_cache = fib_cached(N); t3 = time.perf_counter()
-print("\n2) 记忆化加速对比 fib(37):")
+print("\n2) 记忆化加速对比 fib(37):")  # → 2) 记忆化加速对比 fib(37):
 print(f"   朴素版  : {r_plain}, 耗时 {t1 - t0:.2f}s")
+# 耗时随机器浮动:
+#    朴素版  : 24157817, 耗时 2.19s
 print(f"   @cache : {r_cache}, 耗时 {(t3 - t2) * 1000:.3f}ms")
+# 耗时随机器浮动:
+#    @cache : 24157817, 耗时 0.035ms
 print("   缓存命中统计: fib_cached.cache_info():", fib_cached.cache_info())
+# 输出:    缓存命中统计: fib_cached.cache_info(): CacheInfo(hits=35, misses=38, maxsize=None, currsize=38)
 # 这是什么: 函数名.cache_info() —— 看缓存命中次数(hits/misses), 运维时
 #           判断缓存到底帮了多少忙。
 
@@ -69,11 +77,12 @@ def _(value):
 def _(value):
     return f"字符串「{value}」"
 
-print("\n3) singledispatch 按类型分派:")
-print("   show(1234567)        →", show(1234567))
-print("   show([1, 2, 3])      →", show([1, 2, 3]))
-print("   show('hi')           →", show("hi"))
+print("\n3) singledispatch 按类型分派:")  # → 3) singledispatch 按类型分派:
+print("   show(1234567)        →", show(1234567))  # →    show(1234567)        → 整数 1,234,567
+print("   show([1, 2, 3])      →", show([1, 2, 3]))  # →    show([1, 2, 3])      → 列表 [1, 2, 3]
+print("   show('hi')           →", show("hi"))  # →    show('hi')           → 字符串「hi」
 print("   show(3.14)           →", show(3.14), "  # 没注册 float, 走通用兜底")
+# 输出:    show(3.14)           → 未知类型 float: 3.14   # 没注册 float, 走通用兜底
 
 # ---- 4. reduce: 把序列"滚雪球"式累积成一个值 ----
 # 这是什么: reduce(函数, 序列[, 初值]) —— 从左到右两两累积:
@@ -83,9 +92,9 @@ print("   show(3.14)           →", show(3.14), "  # 没注册 float, 走通用
 nums = [1, 2, 3, 4, 5]
 total = reduce(lambda acc, x: acc + x, nums, 0)          # 初值 0 起步
 product = reduce(lambda acc, x: acc * x, nums, 1)        # 初值 1 起步
-print("\n4) reduce 累积:")
-print("   nums 求和:", total, "   # 有 sum() 的话用它, 这里演示机制")
-print("   nums 求积:", product)
+print("\n4) reduce 累积:")  # → 4) reduce 累积:
+print("   nums 求和:", total, "   # 有 sum() 的话用它, 这里演示机制")  # →    nums 求和: 15    # 有 sum() 的话用它, 这里演示机制
+print("   nums 求积:", product)  # →    nums 求积: 120
 
 # ---- 5. cmp_to_key: 对接"老式比较函数"到 sorted 的 key 体系 ----
 # 这是什么: cmp_to_key(老比较函数) —— 老 API 风格是比较函数 f(a, b): 返回
@@ -98,9 +107,11 @@ def compare_by_len(a, b):              # 老式比较函数: 短的排前, 同�
     return -1 if a < b else (1 if a > b else 0)
 
 words = ["pear", "kiwi", "fig", "apple", "grape"]
-print("\n5) cmp_to_key 老式比较函数对接 sorted:")
+print("\n5) cmp_to_key 老式比较函数对接 sorted:")  # → 5) cmp_to_key 老式比较函数对接 sorted:
 print("   排序结果:", sorted(words, key=cmp_to_key(compare_by_len)))
+# 输出:    排序结果: ['fig', 'kiwi', 'pear', 'apple', 'grape']
 print("   对照新写法 key=(len(x), x):", sorted(words, key=lambda x: (len(x), x)))
+# 输出:    对照新写法 key=(len(x), x): ['fig', 'kiwi', 'pear', 'apple', 'grape']
 
 # ---- 6. wraps 复习(详见 01_lang/02_decorators.py) ----
 # 这是什么: wraps —— 装饰器里包一层后把原函数的 __name__/__doc__ 抄回来,
@@ -127,6 +138,6 @@ def shout_wrapped(func):               # 带 wraps 的正确版
 def greet2():
     """打招呼(正确版)"""
 
-print("\n6) wraps 复习(见 01_lang/02):")
-print("   没 wraps: greet.__name__ =", greet.__name__)
-print("   有 wraps: greet2.__name__ =", greet2.__name__)
+print("\n6) wraps 复习(见 01_lang/02):")  # → 6) wraps 复习(见 01_lang/02):
+print("   没 wraps: greet.__name__ =", greet.__name__)  # →    没 wraps: greet.__name__ = wrapper
+print("   有 wraps: greet2.__name__ =", greet2.__name__)  # →    有 wraps: greet2.__name__ = greet2
