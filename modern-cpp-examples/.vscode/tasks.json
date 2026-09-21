@@ -1,23 +1,24 @@
 {
+    // VSCode 任务配置 —— 用法: 打开某个 .cpp 后按 Ctrl+Shift+B
+    //
+    // 本文件为 macOS 版 (原 Windows 版用 MinGW-w64 g++ + cmd.exe)。
+    // 迁移要点:
+    //   1. 编译器改为 clang++ (macOS 自带, 随 Command Line Tools 安装)
+    //   2. 去掉 -static —— macOS 不支持完全静态链接, 加了会链接失败
+    //   3. 去掉 -lstdc++exp —— 那是 GCC 特有库, clang/libc++ 没有
+    //   4. 去掉 chcp/cmd.exe —— Windows 控制台代码页机制, macOS 无对应概念
+    //   5. 输出去掉 .exe 后缀 —— macOS 可执行文件不带扩展名
     "version": "2.0.0",
     "tasks": [
         {
+            // ★ 默认任务: Ctrl+Shift+B 触发的就是它
             "label": "C++: 编译并运行当前文件",
             "detail": "★ Ctrl+Shift+B —— 先编译, 成功后运行, 一条命令到底",
             "type": "shell",
-            "command": "chcp 65001 >nul & ${fileDirname}/${fileBasenameNoExtension}.exe",
+            "command": "${fileDirname}/${fileBasenameNoExtension}",
             "dependsOn": "C++: 只编译不运行",
             "dependsOrder": "sequence",
             "problemMatcher": [],
-            "options": {
-                "shell": {
-                    "executable": "cmd.exe",
-                    "args": [
-                        "/d",
-                        "/c"
-                    ]
-                }
-            },
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -30,9 +31,9 @@
         },
         {
             "label": "C++: 只编译不运行",
-            "detail": "g++ -std=<下拉选的标准> -Wall -Wextra -O1 -g -pthread -static 当前.cpp -> 同名.exe",
+            "detail": "clang++ -std=<下拉选的标准> -Wall -Wextra -O1 -g -pthread 当前.cpp -> 同名可执行文件",
             "type": "shell",
-            "command": "D:/mingw64/bin/g++.exe",
+            "command": "clang++",
             "args": [
                 "-std=${input:cppStd}",
                 "-Wall",
@@ -40,11 +41,9 @@
                 "-O1",
                 "-g",
                 "-pthread",
-                "-static",
                 "${file}",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}.exe",
-                "-lstdc++exp"
+                "${fileDirname}/${fileBasenameNoExtension}"
             ],
             "options": {
                 "cwd": "${fileDirname}"
@@ -60,19 +59,10 @@
         },
         {
             "label": "C++: 只运行 (不重新编译)",
-            "detail": "直接跑上次编译出来的 exe, 改了代码别用这个",
+            "detail": "直接跑上次编译出来的可执行文件, 改了代码别用这个",
             "type": "shell",
-            "command": "chcp 65001 >nul & ${fileDirname}/${fileBasenameNoExtension}.exe",
+            "command": "${fileDirname}/${fileBasenameNoExtension}",
             "problemMatcher": [],
-            "options": {
-                "shell": {
-                    "executable": "cmd.exe",
-                    "args": [
-                        "/d",
-                        "/c"
-                    ]
-                }
-            },
             "presentation": {
                 "reveal": "always",
                 "panel": "shared",
@@ -81,14 +71,14 @@
         },
         {
             "type": "cppbuild",
-            "label": "C/C++: g++.exe 生成活动文件",
-            "command": "D:\\mingw64\\bin\\g++.exe",
+            "label": "C/C++: clang++ 生成活动文件",
+            "command": "/usr/bin/clang++",
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
                 "${file}",
                 "-o",
-                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+                "${fileDirname}/${fileBasenameNoExtension}"
             ],
             "options": {
                 "cwd": "${fileDirname}"
@@ -100,7 +90,7 @@
                 "kind": "build",
                 "isDefault": false
             },
-            "detail": "C/C++ 扩展自动生成的编译任务。本项目不用它：它没带 -std= 和 -static，编 cpp17+ 会失败、编出来也跑不起来。保留是为了让扩展别再重复生成，isDefault 已关掉，Ctrl+Shift+B 不会再走到它。"
+            "detail": "C/C++ 扩展自动生成的编译任务。本项目不用它：它没带 -std=, 编 cpp17+ 会失败。保留是为了让扩展别再重复生成, isDefault 已关掉, Ctrl+Shift+B 不会再走到它。"
         }
     ],
     "inputs": [

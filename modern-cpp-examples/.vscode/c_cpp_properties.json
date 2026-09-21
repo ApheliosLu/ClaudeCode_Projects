@@ -1,15 +1,17 @@
 {
+    // C/C++ 扩展的智能提示配置 (只影响补全/报错高亮, 不影响实际编译)
+    // 本文件为 macOS 版: 编译器改为系统自带 clang++, IntelliSense 模式改为 macos-clang-arm64
     "version": 4,
     "configurations": [
         {
-            "name": "MinGW-w64 g++ (winlibs)",
-            "compilerPath": "D:/mingw64/bin/g++.exe",
+            "name": "Apple clang++ (macOS)",
+            "compilerPath": "/usr/bin/clang++",
             "includePath": [
                 "${workspaceFolder}/**"
             ],
             "cStandard": "c17",
             "cppStandard": "c++23",
-            "intelliSenseMode": "windows-gcc-x64"
+            "intelliSenseMode": "macos-clang-arm64"
         }
     ]
 }

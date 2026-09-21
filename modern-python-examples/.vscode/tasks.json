@@ -2,17 +2,21 @@
   // VSCode 任务配置 —— 用法: 打开某个 .py 后按 Ctrl+Shift+B
   //
   // 注意这里只有一个任务。C++ 那边有"只编译/编译并运行/只运行"三个，
-  // 因为 C++ 要先编译出 exe 再运行，是两步；Python 是解释执行，一条命令到底。
+  // 因为 C++ 要先编译出可执行文件再运行，是两步；Python 是解释执行，一条命令到底。
   //
   // ⚠️ 跟 C++ 一样: 任务作用于"当前焦点所在的编辑器"。焦点停在 README.md 上按快捷键会去跑 README.md。
+  //
+  // 本文件为 macOS 版 (原 Windows 版用 PATH 上的 "python")。迁移要点:
+  //   命令改为 py314 解释器的绝对路径 —— 不依赖终端是否已 `conda activate py314`,
+  //   按 Ctrl+Shift+B 永远跑在 Python 3.14 上, 行为稳定可预期。
   "version": "2.0.0",
   "tasks": [
     {
       // ★ 默认任务: Ctrl+Shift+B 触发的就是它
       "label": "Python: 运行当前文件",
-      "detail": "python 当前.py (用 PATH 上的 python = Miniforge py314)",
+      "detail": "~/miniforge3/envs/py314/bin/python 当前.py (Miniforge py314 = Python 3.14.7)",
       "type": "shell",
-      "command": "python",
+      "command": "/Users/nalanyian/miniforge3/envs/py314/bin/python",
       "args": [
         "${file}"
       ],

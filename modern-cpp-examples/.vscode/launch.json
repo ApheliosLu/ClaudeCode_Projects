@@ -1,26 +1,29 @@
 {
   // 按 F5 断点调试当前 .cpp。需要 VSCode 装了 C/C++ 扩展 (ms-vscode.cpptools)
   // 只"想跑一下看输出"的话不用 F5, 用 tasks.json 里的任务更省事
+  //
+  // 本文件为 macOS 版 (原 Windows 版用 MinGW-w64 的 gdb)。迁移要点:
+  //   1. MIMode 改为 lldb —— macOS 自带, 随 Command Line Tools 提供
+  //   2. 删掉 miDebuggerPath —— 让扩展自动定位 lldb, 不再写死 Windows 路径
+  //   3. program 去掉 .exe 后缀
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "C++: 调试当前文件 (gdb)",
+      "name": "C++: 调试当前文件 (lldb)",
       "type": "cppdbg",
       "request": "launch",
       // 与 tasks.json 的输出路径保持一致
-      "program": "${fileDirname}/${fileBasenameNoExtension}.exe",
+      "program": "${fileDirname}/${fileBasenameNoExtension}",
       "args": [],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",
       "environment": [],
-      // false = 输出显示在 VSCode 的"调试控制台"里, 不另开黑窗
+      // false = 输出显示在 VSCode 的"调试控制台"里, 不另开终端窗口
       "externalConsole": false,
-      "MIMode": "gdb",
-      // 与 g++ 同源 (同为 winlibs 构建), 版本必须匹配, 别改成 Qt 自带的那个 gdb
-      "miDebuggerPath": "D:/mingw64/bin/gdb.exe",
+      "MIMode": "lldb",
       "setupCommands": [
         {
-          "description": "启用 gdb 整齐打印 (STL 容器显示成人类可读格式)",
+          "description": "启用 lldb 整齐打印 (STL 容器显示成人类可读格式)",
           "text": "-enable-pretty-printing",
           "ignoreFailures": true
         }

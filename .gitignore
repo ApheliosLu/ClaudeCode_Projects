@@ -21,8 +21,16 @@ credentials.json
 .aws/
 .ssh/
 
-# C++ 编译产物 (modern-cpp-examples 里 Ctrl+Shift+B 会在 .cpp 旁生成同名 exe)
+# C++ 编译产物
+# (modern-cpp-examples 里 Ctrl+Shift+B 会在 .cpp 旁生成同名可执行文件:
+#  Windows 上是 xxx.exe, 由下面的 *.exe 覆盖;
+#  macOS 上是无扩展名的 xxx 和 xxx.dSYM/, 由 modern-cpp-examples/.gitignore 覆盖)
 *.exe
 *.o
 *.obj
 *.out
+
+# Python 缓存
+# (跑一次 py_compile 或 import 就会在各目录下生成 __pycache__/)
+__pycache__/
+*.py[cod]

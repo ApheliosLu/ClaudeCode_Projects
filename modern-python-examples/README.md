@@ -7,7 +7,7 @@
 数据模型与元编程(01)、迭代与惰性求值(02)、类型注解体系(03)、并发与异步(04/05)、
 标准库工具箱(06)、异常进阶(07)、3.12 → 3.14 新特性(08)、工程工具(09)。
 
-## 版本现状 (2026-09 视角, 本机 Python 3.14.3 实测)
+## 版本现状 (2026-09 视角)
 
 | 版本 | 状态 | 本套示例的建议 |
 | --- | --- | --- |
@@ -15,7 +15,14 @@
 | 3.13 | 稳定, 性能与类型系统增强 | 特性总览见 `08_new/02_py313.py` |
 | 3.14 | **当前最新稳定**, 模板字符串/惰性注解落地 | 特性总览见 `08_new/03_py314.py`, 新增处均有 `(3.12 及之前: …)` 对照注释 |
 
-3.12 与 3.14 的写法差异速查见文末对照表。本机实测 `3.14.3`(Miniforge py314 环境)。
+3.12 与 3.14 的写法差异速查见文末对照表。
+
+> **本机环境 (macOS)**：Miniforge 的 `py314` 环境，**Python 3.14.7**。
+> 环境路径 `~/miniforge3/envs/py314/`，解释器 `~/miniforge3/envs/py314/bin/python`。
+> 全部 34 个文件已在此环境实跑验证通过（2026-09-21）。
+>
+> Windows 时期的采集环境是 Miniforge py314 → Python 3.14.3。两者都是 3.14，
+> 示例是纯标准库代码，输出完全一致。
 
 ## 目录结构 (34 个文件全部完成并逐文件运行验证 ✅)
 
@@ -53,7 +60,7 @@ for word in Words("hello python world"):
 
 说明: 计时/随机数/时间戳/绝对路径这类每次都会变的值, 取的是本机某次运行的实测值,
 并在注释里标明"随机器浮动"之类; traceback 的行号会随注释增删而变化。
-全部输出在 Python 3.14.3 + `PYTHONUTF8=1` 下采集(见"中文乱码怎么办")。
+全部输出在 Python 3.14.3 + `PYTHONUTF8=1` 下采集(2026-09-21 在 macOS / Python 3.14.7 上复跑一致)。
 
 ## 交付一览 (34 文件: 主题与演示要点)
 
@@ -118,16 +125,36 @@ for word in Words("hello python world"):
 ## 运行方式
 
 零第三方依赖 -- 不用建虚拟环境, 不用 `pip install`。
-本机实测环境: **Miniforge py314 -> Python 3.14.3** (即 PATH 上的 `python`)。
+
+**本机环境 (macOS)**: Miniforge 的 `py314` 环境, Python 3.14.7。
+
+> ⚠️ **注意**: conda 已设为**不自动激活 base 环境**——这是刻意的, 目的是不让 conda 的
+> `python` / `pip` 遮蔽系统命令和 Homebrew 的工具, 避免两个包管理器争抢同一批命令名。
+>
+> 代价是: **直接开终端时 `python` 这个命令并不存在**, 敲了会报 `command not found`。
+> 这不是环境没配好。下面给两种正常用法。
 
 ### 命令行 (任何终端)
 
+**方式一 (推荐): 用绝对路径**, 不依赖终端是否激活过 conda:
+
 ```bash
-# 任意单文件(在 modern-python-examples/ 下, Windows Git Bash)
-python 01_lang/01_data_model.py
+# 先定义个别名, 之后用 $PY 代替一长串路径 (写进 ~/.zshrc 可持久化)
+PY=~/miniforge3/envs/py314/bin/python
+
+# 任意单文件(在 modern-python-examples/ 下)
+$PY 01_lang/01_data_model.py
 
 # 整域核验
-cd 06_stdlib && for f in *.py; do python "$f"; done
+cd 06_stdlib && for f in *.py; do $PY "$f"; done
+```
+
+**方式二: 显式激活环境**, 之后就能用短命令 `python`:
+
+```bash
+conda activate py314     # 激活后 `python` -> 3.14.7
+python 01_lang/01_data_model.py
+conda deactivate         # 用完退出, PATH 恢复干净
 ```
 
 示例文件可能写临时目录, 均用完自动清理。
@@ -149,9 +176,14 @@ cd 06_stdlib && for f in *.py; do python "$f"; done
 
 | 文件 | 作用 |
 | --- | --- |
-| `tasks.json` | 定义"运行当前文件"任务, 被 `Ctrl+Shift+B` 触发 |
-| `launch.json` | F5 调试配置。`console` 特意设成 `integratedTerminal`, 默认的调试控制台里 `input()` 不可用、中文也容易乱码 |
-| `settings.json` | 锁定解释器为 py314 + 集成终端里带上 `PYTHONUTF8=1` |
+| `tasks.json` | 定义"运行当前文件"任务, 被 `Ctrl+Shift+B` 触发。命令写的是 py314 解释器的**绝对路径**, 所以不依赖终端是否 `conda activate` 过 |
+| `launch.json` | F5 调试配置。`console` 特意设成 `integratedTerminal`, 默认的调试控制台里 `input()` 不可用 |
+| `settings.json` | 锁定默认解释器为 py314 (供 Pylance 类型提示、右上角 ▶ 按钮使用) + 集成终端里带上 `PYTHONUTF8=1` |
+
+> **换了 Miniforge 安装位置怎么办**: `tasks.json` 和 `settings.json` 里各有一处写死的
+> 绝对路径 `/Users/nalanyian/miniforge3/envs/py314/bin/python`。如果你把 `~/miniforge3`
+> 挪了地方, 改这两处即可（`Ctrl+Shift+P` → `Developer: Reload Window` 生效）。
+> 或者用 VSCode 命令面板的 `Python: Select Interpreter` 选一次, `settings.json` 会被自动更新。
 
 ### 为什么 Python 不需要 C++ 那么复杂的配置
 
@@ -160,27 +192,29 @@ C++ 那边有三个任务(只编译 / 编译并运行 / 只运行), Python 只�
 | | C++ | Python |
 | --- | --- | --- |
 | 源文件是 | 给编译器读的 | 给解释器读的 |
-| 到能跑需要 | ① `g++` 编译链接 -> ② 运行 exe, **两步** | `python f.py` **一步到位** |
-| 中间产物 | `.exe`(得管它在哪、是不是最新的) | 无 |
+| 到能跑需要 | ① `clang++` 编译链接 -> ② 运行产物, **两步** | `python f.py` **一步到位** |
+| 中间产物 | 可执行文件(得管它在哪、是不是最新的) | 无 |
 | 需要用户拍板的自由参数 | 编译器、`-std=` 版本、`-O` 级别、链接哪些库、输出名……**不写下来 VSCode 猜不到** | 几乎只有"用哪个解释器", 而 Python 扩展已经管了 |
 
 一句话: **`tasks.json` 的存在前提是"从源码到可执行有需要用户拍板的参数"。** C++ 有, 所以必须有;
 Python 没有 -- `python 文件名` 已经短到不需要再包一层。同理, VSCode 的 Python 扩展能自动提供
 运行按钮和 `Python File` 调试配置, 而 C/C++ 扩展给不了(它没法猜你怎么编译)。
 
-### 中文乱码怎么办
+### 中文输出与编码
 
-只有一种情况会乱码: **输出被重定向或走管道**时, Python 检测到 stdout 不是真控制台,
-会退回系统区域编码 `cp936`(GBK), 中文就糊了。
+**macOS 上不需要做任何设置。** 系统 locale 是 UTF-8, Python 据此把 stdout 编码定为 UTF-8——
+无论输出打到终端还是被重定向到文件, 中文都正常。
 
 | 场景 | 结果 |
 | --- | --- |
-| VSCode 集成终端里手动 `python f.py` | ✅ 真控制台, 走 UTF-8 通道, 正常显示 |
-| `python f.py > out.txt`、`\| head`、被别的工具抓输出 | ⚠️ 走 GBK, 乱码 |
+| VSCode 集成终端里跑 | ✅ UTF-8 |
+| `python f.py > out.txt`、`\| head`、被别的工具抓输出 | ✅ 仍是 UTF-8(写进文件的也是 UTF-8 字节) |
 
-遇到就加环境变量: `PYTHONUTF8=1 python 文件.py`(上面 `settings.json` 里已经给集成终端配好了)。
+> **Windows 上这完全是另一回事**: 系统区域编码是 `cp936`(GBK), 输出一旦被重定向,
+> Python 就退回 GBK, 中文立刻乱码——所以 Windows 版这里必须配 `PYTHONUTF8=1`。
+> macOS 的 locale 天生是 UTF-8, 这个问题不存在。
 
-## 对照速查: 3.12 → 3.14 关键差异 (本机 3.14.3 实测)
+## 对照速查: 3.12 → 3.14 关键差异
 
 | 特性 | 版本 | 3.12 及之前 | 3.14 实测行为(差异) | 示例文件 |
 | --- | --- | --- | --- | --- |
@@ -205,9 +239,28 @@ Python 没有 -- `python 文件名` 已经短到不需要再包一层。同理, 
 | `finally` 内 `return/break/continue` (PEP 765) | 3.14 | 静默放行(吞返回值) | 编译期 SyntaxWarning(实测), 未来转错误 | 08_new/03 |
 
 > 版本注释惯例: 各文件用 `(3.12 及之前: …)` 标注行为差异; `08_new` 三个
-> 文件的探测结论均以本机 3.14.3 实测为准并写入文件头注释。
+> 文件的探测结论均以实测为准并写入文件头注释(原始采集环境 3.14.3,
+> 2026-09-21 在 macOS / 3.14.7 上复跑结论一致)。
 
-## 验证与问题记录 (2026-09-05, 全部实测)
+## 验证与问题记录
+
+### macOS 环境复测 (2026-09-21)
+
+**环境**: Miniforge `py314` 环境, **Python 3.14.7**, macOS 26.6 (Apple Silicon)。
+**方法**: `~/miniforge3/envs/py314/bin/python <文件>` 逐个实际运行, 检查退出码与输出。
+
+| 项目 | 结果 |
+| --- | --- |
+| 语法检查 (`py_compile`) | ✅ 36/36 文件通过 |
+| **实际运行** | ✅ **34/34 通过, 0 失败** |
+| 输出一致性 | ✅ 与下方 Windows 记录一致(纯标准库代码, 跨平台输出不变) |
+
+> `08_new/03_py314.py` 会打印一条 `SyntaxWarning: 'return' in a 'finally' block`——
+> 这是**文件刻意演示的 PEP 765 行为**, 文件头注释里有预告, 不是错误。
+
+### Windows 环境原始验证 (2026-09-05, 全部实测)
+
+> 以下为原 Windows 机器上的记录, 保留备查。
 
 | 域 | 文件数 | 运行核验 | 备注 |
 | --- | --- | --- | --- |
